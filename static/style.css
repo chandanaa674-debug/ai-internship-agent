@@ -1,0 +1,400 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    background: #f6f7fb;
+    color: #17172b;
+    min-height: 100vh;
+}
+
+.navbar {
+    height: 72px;
+    background: white;
+    border-bottom: 1px solid #e8e8ef;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 7%;
+}
+
+.logo {
+    font-size: 21px;
+    font-weight: 700;
+}
+
+.logo span {
+    background: #635bff;
+    color: white;
+    padding: 8px 10px;
+    border-radius: 9px;
+    margin-right: 7px;
+}
+
+.status {
+    color: #55556b;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.status-dot {
+    width: 9px;
+    height: 9px;
+    background: #20b26b;
+    border-radius: 50%;
+}
+
+.hero {
+    padding: 80px 20px 90px;
+    background: linear-gradient(135deg, #f0efff, #faf9ff, #eef7ff);
+    text-align: center;
+}
+
+.hero-content {
+    max-width: 900px;
+    margin: auto;
+}
+
+.badge {
+    display: inline-block;
+    background: white;
+    border: 1px solid #dddafc;
+    padding: 8px 15px;
+    border-radius: 30px;
+    font-size: 13px;
+    color: #635bff;
+    font-weight: 600;
+    margin-bottom: 22px;
+}
+
+.hero h1 {
+    font-size: clamp(38px, 6vw, 65px);
+    line-height: 1.08;
+    margin-bottom: 20px;
+}
+
+.hero h1 span {
+    color: #635bff;
+}
+
+.hero p {
+    max-width: 650px;
+    margin: auto;
+    color: #66667a;
+    font-size: 17px;
+    line-height: 1.7;
+}
+
+.search-container {
+    max-width: 720px;
+    margin: 35px auto 18px;
+    background: white;
+    padding: 7px;
+    border-radius: 15px;
+    display: flex;
+    box-shadow: 0 12px 35px rgba(60, 50, 120, 0.12);
+    border: 1px solid #e4e3ef;
+}
+
+.search-container input {
+    flex: 1;
+    border: none;
+    outline: none;
+    padding: 15px 17px;
+    font-size: 15px;
+    min-width: 0;
+}
+
+.search-container button {
+    border: none;
+    background: #635bff;
+    color: white;
+    font-weight: 700;
+    padding: 0 25px;
+    border-radius: 11px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.search-container button:hover {
+    transform: translateY(-1px);
+    opacity: 0.92;
+}
+
+.search-container button:disabled {
+    opacity: 0.7;
+    cursor: wait;
+}
+
+.quick-search {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    color: #77778a;
+    font-size: 13px;
+}
+
+.quick-search button {
+    border: 1px solid #deddeb;
+    background: white;
+    padding: 7px 12px;
+    border-radius: 20px;
+    cursor: pointer;
+    color: #45455b;
+}
+
+.quick-search button:hover {
+    border-color: #635bff;
+    color: #635bff;
+}
+
+.results-section {
+    max-width: 1150px;
+    margin: 55px auto;
+    padding: 0 20px;
+}
+
+.results-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: end;
+    margin-bottom: 25px;
+    gap: 20px;
+}
+
+.results-header h2 {
+    font-size: 28px;
+    margin-bottom: 7px;
+}
+
+.results-header p {
+    color: #77778a;
+}
+
+.result-count {
+    background: #ecebff;
+    color: #635bff;
+    padding: 8px 13px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.results-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
+}
+
+.internship-card {
+    background: white;
+    border: 1px solid #e7e7ef;
+    border-radius: 17px;
+    padding: 22px;
+    box-shadow: 0 7px 25px rgba(30, 30, 70, 0.05);
+    transition: 0.2s;
+}
+
+.internship-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 32px rgba(30, 30, 70, 0.09);
+}
+
+.card-top {
+    display: flex;
+    gap: 13px;
+    margin-bottom: 22px;
+}
+
+.number {
+    width: 38px;
+    height: 38px;
+    flex-shrink: 0;
+    border-radius: 10px;
+    background: #eeedff;
+    color: #635bff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: 700;
+}
+
+.card-title h3 {
+    font-size: 18px;
+    margin-bottom: 7px;
+}
+
+.card-title p {
+    color: #77778a;
+    font-size: 13px;
+}
+
+.details {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 13px;
+    margin-bottom: 20px;
+}
+
+.detail {
+    display: flex;
+    gap: 9px;
+    align-items: flex-start;
+}
+
+.detail > span {
+    font-size: 16px;
+}
+
+.detail small {
+    display: block;
+    color: #9999aa;
+    font-size: 11px;
+    margin-bottom: 3px;
+}
+
+.detail strong {
+    font-size: 13px;
+    font-weight: 600;
+    color: #44445a;
+}
+
+.apply-btn {
+    display: block;
+    text-align: center;
+    text-decoration: none;
+    background: #635bff;
+    color: white;
+    padding: 12px;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 14px;
+}
+
+.apply-btn:hover {
+    opacity: 0.9;
+}
+
+.loading {
+    text-align: center;
+    padding: 60px 20px;
+}
+
+.spinner {
+    width: 42px;
+    height: 42px;
+    border: 4px solid #dddcef;
+    border-top-color: #635bff;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 18px;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.loading h3 {
+    margin-bottom: 7px;
+}
+
+.loading p {
+    color: #77778a;
+}
+
+.hidden {
+    display: none !important;
+}
+
+.error {
+    background: #fff0f0;
+    border: 1px solid #ffd0d0;
+    color: #b32d2d;
+    padding: 14px 17px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+.empty {
+    grid-column: 1 / -1;
+    background: white;
+    border: 1px solid #e7e7ef;
+    border-radius: 17px;
+    padding: 60px 20px;
+    text-align: center;
+}
+
+.empty-icon {
+    font-size: 40px;
+    margin-bottom: 15px;
+}
+
+.empty h3 {
+    margin-bottom: 8px;
+}
+
+.empty p {
+    color: #77778a;
+}
+
+footer {
+    text-align: center;
+    padding: 35px 20px;
+    border-top: 1px solid #e7e7ef;
+    color: #77778a;
+    background: white;
+}
+
+footer p {
+    font-weight: 700;
+    color: #44445a;
+    margin-bottom: 6px;
+}
+
+footer span {
+    font-size: 12px;
+}
+
+@media (max-width: 750px) {
+
+    .navbar {
+        padding: 0 20px;
+    }
+
+    .status {
+        display: none;
+    }
+
+    .hero {
+        padding: 55px 15px 65px;
+    }
+
+    .search-container {
+        flex-direction: column;
+        gap: 6px;
+        padding: 7px;
+    }
+
+    .search-container button {
+        padding: 13px;
+    }
+
+    .results-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .results-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}
