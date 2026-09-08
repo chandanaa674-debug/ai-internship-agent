@@ -3,323 +3,579 @@
 
 <head>
 
-    <meta charset="UTF-8">
-
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
-
-    <title>AI Internship Agent</title>
-
-    <link rel="stylesheet"
-          href="{{ url_for('static', filename='style.css') }}">
-
-    <style>
-
-        /* =====================================
-           DETAILS MODAL
-        ====================================== */
-
-        .details-modal {
-
-            position: fixed;
-
-            inset: 0;
-
-            background: rgba(0, 0, 0, 0.65);
-
-            display: none;
-
-            align-items: center;
-
-            justify-content: center;
-
-            padding: 20px;
-
-            z-index: 9999;
-
-        }
-
-
-        .details-modal.active {
-
-            display: flex;
-
-        }
-
-
-        .details-box {
-
-            width: 100%;
-
-            max-width: 750px;
-
-            max-height: 90vh;
-
-            overflow-y: auto;
-
-            background: white;
-
-            border-radius: 20px;
-
-            padding: 32px;
-
-            position: relative;
-
-            box-shadow:
-                0 25px 70px rgba(0, 0, 0, 0.30);
-
-        }
-
-
-        .close-details {
-
-            position: absolute;
-
-            top: 15px;
-
-            right: 18px;
-
-            width: 40px;
-
-            height: 40px;
-
-            border: none;
-
-            border-radius: 50%;
-
-            background: #f1f3f5;
-
-            font-size: 25px;
-
-            cursor: pointer;
-
-        }
-
-
-        .close-details:hover {
-
-            background: #e5e7eb;
-
-        }
-
-
-        /* =====================================
-           DETAILS TITLE
-        ====================================== */
-
-        .details-title {
-
-            margin: 0 50px 8px 0;
-
-            font-size: 28px;
-
-            line-height: 1.3;
-
-            color: #111827;
-
-        }
-
-
-        .details-company {
-
-            font-size: 17px;
-
-            color: #555;
-
-            margin-bottom: 25px;
-
-        }
-
-
-        /* =====================================
-           DETAILS INFORMATION
-        ====================================== */
-
-        .details-info {
-
-            display: grid;
-
-            grid-template-columns:
-                repeat(2, 1fr);
-
-            gap: 14px;
-
-        }
-
-
-        .info-box {
-
-            background: #f7f8fa;
-
-            border-radius: 12px;
-
-            padding: 16px;
-
-        }
-
-
-        .info-label {
-
-            display: block;
-
-            font-size: 12px;
-
-            color: #777;
-
-            margin-bottom: 6px;
-
-            text-transform: uppercase;
-
-            letter-spacing: 0.4px;
-
-        }
-
-
-        .info-value {
-
-            display: block;
-
-            font-size: 15px;
-
-            color: #222;
-
-            font-weight: 600;
-
-            line-height: 1.5;
-
-        }
-
-
-        /* =====================================
-           APPLY BUTTON
-        ====================================== */
-
-        .final-apply {
-
-            display: block;
-
-            width: 100%;
-
-            box-sizing: border-box;
-
-            text-align: center;
-
-            margin-top: 28px;
-
-            padding: 15px 20px;
-
-            border-radius: 11px;
-
-            background: #2563eb;
-
-            color: white;
-
-            text-decoration: none;
-
-            font-size: 16px;
-
-            font-weight: 700;
-
-        }
-
-
-        .final-apply:hover {
-
-            background: #1d4ed8;
-
-        }
-
-
-        /* =====================================
-           VIEW DETAILS BUTTON
-        ====================================== */
-
-        .view-details-btn {
-
-            width: 100%;
-
-            border: none;
-
-            padding: 13px 18px;
-
-            border-radius: 10px;
-
-            background: #2563eb;
-
-            color: white;
-
-            font-size: 15px;
-
-            font-weight: 600;
-
-            cursor: pointer;
-
-            margin-top: 18px;
-
-        }
-
-
-        .view-details-btn:hover {
-
-            background: #1d4ed8;
-
-        }
-
-
-        /* =====================================
-           MATCH SCORE
-        ====================================== */
-
-        .match-score {
-
-            display: inline-block;
-
-            margin-top: 12px;
-
-            padding: 6px 12px;
-
-            border-radius: 20px;
-
-            background: #eef6ff;
-
-            color: #2563eb;
-
-            font-size: 13px;
-
-            font-weight: 600;
-
-        }
-
-
-        /* =====================================
-           MOBILE
-        ====================================== */
-
-        @media (max-width: 600px) {
-
-            .details-box {
-
-                padding: 24px;
-
-            }
-
-
-            .details-info {
-
-                grid-template-columns: 1fr;
-
-            }
-
-
-            .details-title {
-
-                font-size: 23px;
-
-            }
-
-        }
-
-    </style>
+<meta charset="UTF-8">
+
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
+
+<title>AI Internship Agent</title>
+
+<style>
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background: #ffffff;
+    color: #171717;
+    line-height: 1.6;
+}
+
+.navbar {
+    height: 76px;
+    border-bottom: 1px solid #eeeeee;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 5%;
+}
+
+.logo {
+    font-size: 22px;
+    font-weight: 700;
+}
+
+.nav-links {
+    display: flex;
+    gap: 30px;
+}
+
+.nav-links a {
+    text-decoration: none;
+    color: #555;
+    font-size: 14px;
+}
+
+.sign-in {
+    border: none;
+    background: #111;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 25px;
+}
+
+.container {
+    width: 90%;
+    max-width: 1150px;
+    margin: auto;
+}
+
+.hero {
+    text-align: center;
+    padding: 65px 0 45px;
+}
+
+.hero h1 {
+    font-family: Georgia, serif;
+    font-size: 50px;
+    margin-bottom: 15px;
+}
+
+.hero p {
+    color: #666;
+    max-width: 650px;
+    margin: auto;
+}
+
+.form-container {
+    border: 1px solid #e8e8e8;
+    border-radius: 18px;
+    padding: 38px;
+    margin-bottom: 60px;
+}
+
+.form-section {
+    margin-bottom: 40px;
+}
+
+.section-title {
+    font-size: 20px;
+    margin-bottom: 20px;
+}
+
+.section-number {
+    color: #635bff;
+    margin-right: 8px;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.full-width {
+    grid-column: 1 / -1;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+}
+
+.field label {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 7px;
+}
+
+.field input,
+.field select,
+.field textarea {
+    width: 100%;
+    padding: 13px;
+    border: 1px solid #ddd;
+    border-radius: 9px;
+    font-size: 14px;
+    outline: none;
+}
+
+.field textarea {
+    min-height: 110px;
+    resize: vertical;
+}
+
+.form-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+.details-btn,
+.best-btn {
+    padding: 14px 23px;
+    border-radius: 9px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.details-btn {
+    border: 1px solid #ddd;
+    background: #f5f5f5;
+}
+
+.best-btn {
+    border: 1px solid #635bff;
+    background: #635bff;
+    color: white;
+}
+
+.best-btn:hover {
+    background: #5149e8;
+}
+
+
+/* =====================================================
+   LOADING
+===================================================== */
+
+#loading {
+    display: none;
+    text-align: center;
+    padding: 30px;
+}
+
+.loader {
+    width: 38px;
+    height: 38px;
+    border: 4px solid #eee;
+    border-top: 4px solid #635bff;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: auto auto 12px;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+
+/* =====================================================
+   RECOMMENDATIONS
+===================================================== */
+
+#recommendations {
+    display: none;
+    margin-bottom: 70px;
+}
+
+.recommendation-header {
+    margin-bottom: 25px;
+}
+
+.recommendation-header h2 {
+    font-family: Georgia, serif;
+    font-size: 38px;
+}
+
+.recommendation-header p {
+    color: #777;
+}
+
+
+/* =====================================================
+   AI BOX
+===================================================== */
+
+.ai-box {
+    background: #f7f6ff;
+    border: 1px solid #e4e1ff;
+    border-radius: 14px;
+    padding: 23px;
+    margin-bottom: 28px;
+}
+
+.ai-box h3 {
+    margin-bottom: 10px;
+}
+
+.ai-status {
+    display: inline-block;
+    margin-top: 12px;
+    padding: 5px 10px;
+    border-radius: 20px;
+    background: white;
+    color: #635bff;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+
+/* =====================================================
+   CARDS
+===================================================== */
+
+.results-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 22px;
+}
+
+.internship-card {
+    border: 1px solid #e5e5e5;
+    border-radius: 15px;
+    padding: 23px;
+    background: white;
+    transition: 0.2s;
+}
+
+.internship-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.07);
+}
+
+.match-score {
+    display: inline-block;
+    background: #f0efff;
+    color: #635bff;
+    padding: 6px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    margin-bottom: 14px;
+}
+
+.best-label {
+    float: right;
+    background: #635bff;
+    color: white;
+    padding: 5px 9px;
+    border-radius: 15px;
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.internship-card h3 {
+    font-size: 19px;
+    margin-bottom: 5px;
+}
+
+.company {
+    font-weight: 600;
+    color: #555;
+    margin-bottom: 15px;
+}
+
+.info {
+    font-size: 13px;
+    color: #666;
+    margin: 6px 0;
+}
+
+.skills-title {
+    font-size: 12px;
+    font-weight: 700;
+    margin-top: 16px;
+}
+
+.skills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+}
+
+.skill {
+    background: #f5f5f5;
+    padding: 5px 9px;
+    border-radius: 15px;
+    font-size: 11px;
+}
+
+.source {
+    color: #999;
+    font-size: 11px;
+    margin-top: 15px;
+}
+
+
+/* =====================================================
+   CARD BUTTONS
+===================================================== */
+
+.card-buttons {
+    display: flex;
+    gap: 9px;
+    margin-top: 20px;
+}
+
+.save-btn,
+.view-btn {
+    flex: 1;
+    padding: 11px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.save-btn {
+    background: white;
+    border: 1px solid #ddd;
+}
+
+.save-btn:hover {
+    border-color: #635bff;
+    color: #635bff;
+}
+
+.save-btn.saved {
+    color: #635bff;
+    background: #f0efff;
+    border-color: #635bff;
+}
+
+.view-btn {
+    border: 1px solid #635bff;
+    background: #635bff;
+    color: white;
+}
+
+.view-btn:hover {
+    background: #5149e8;
+}
+
+
+/* =====================================================
+   INTERNSHIP DETAILS
+===================================================== */
+
+#internshipDetails {
+    display: none;
+    margin-bottom: 80px;
+}
+
+.details-wrapper {
+    max-width: 900px;
+    margin: auto;
+}
+
+.back-btn {
+    border: none;
+    background: transparent;
+    color: #635bff;
+    font-size: 14px;
+    cursor: pointer;
+    margin-bottom: 22px;
+}
+
+.details-card {
+    border: 1px solid #e5e5e5;
+    border-radius: 18px;
+    padding: 38px;
+    background: white;
+}
+
+.details-match {
+    display: inline-block;
+    background: #f0efff;
+    color: #635bff;
+    padding: 7px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    margin-bottom: 18px;
+}
+
+.details-card h2 {
+    font-family: Georgia, serif;
+    font-size: 38px;
+    line-height: 1.2;
+    margin-bottom: 7px;
+}
+
+.details-company {
+    font-size: 17px;
+    font-weight: 600;
+    color: #555;
+    margin-bottom: 25px;
+}
+
+.details-info-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.details-info {
+    border: 1px solid #eeeeee;
+    border-radius: 10px;
+    padding: 15px;
+}
+
+.details-info strong {
+    display: block;
+    font-size: 11px;
+    color: #999;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+}
+
+.details-info span {
+    font-size: 14px;
+}
+
+.details-section {
+    margin-top: 28px;
+}
+
+.details-section h3 {
+    font-size: 18px;
+    margin-bottom: 10px;
+}
+
+.details-description {
+    color: #555;
+    font-size: 15px;
+    line-height: 1.8;
+}
+
+.details-skills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+}
+
+.apply-now {
+    display: inline-block;
+    margin-top: 30px;
+    padding: 14px 25px;
+    background: #635bff;
+    color: white;
+    text-decoration: none;
+    border-radius: 9px;
+    font-weight: 600;
+}
+
+.apply-now:hover {
+    background: #5149e8;
+}
+
+.no-apply {
+    display: inline-block;
+    margin-top: 30px;
+    padding: 14px 25px;
+    background: #eeeeee;
+    color: #777;
+    border-radius: 9px;
+}
+
+
+/* =====================================================
+   FOOTER
+===================================================== */
+
+footer {
+    border-top: 1px solid #eee;
+    padding: 30px;
+    text-align: center;
+    color: #999;
+    font-size: 13px;
+}
+
+
+/* =====================================================
+   MOBILE
+===================================================== */
+
+@media (max-width: 900px) {
+
+    .results-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .hero h1 {
+        font-size: 42px;
+    }
+}
+
+@media (max-width: 650px) {
+
+    .nav-links {
+        display: none;
+    }
+
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .full-width {
+        grid-column: auto;
+    }
+
+    .form-container {
+        padding: 22px;
+    }
+
+    .form-buttons {
+        flex-direction: column;
+    }
+
+    .results-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .details-info-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .details-card {
+        padding: 25px;
+    }
+
+    .details-card h2 {
+        font-size: 30px;
+    }
+}
+
+</style>
 
 </head>
 
@@ -327,149 +583,126 @@
 <body>
 
 
-<!-- =====================================
-     HEADER
-====================================== -->
+<!-- =====================================================
+     NAVBAR
+===================================================== -->
 
-<header class="navbar">
+<nav class="navbar">
 
     <div class="logo">
-
-        <span>AI</span>
-
-        Internship Agent
-
+        AI Internship Agent
     </div>
 
+    <div class="nav-links">
 
-    <div class="status">
+        <a href="#form">
+            Find Internships
+        </a>
 
-        <span class="status-dot"></span>
+        <a href="#recommendations">
+            Recommendations
+        </a>
 
-        Live Search
+        <a href="#about">
+            About
+        </a>
 
     </div>
-
-</header>
-
+</nav>
 
 
-<main>
-
-
-<!-- =====================================
+<!-- =====================================================
      HERO
-====================================== -->
+===================================================== -->
 
 <section class="hero">
 
-    <div class="hero-content">
-
-
-        <div class="badge">
-
-            🚀 AI-Powered Internship Finder
-
-        </div>
-
+    <div class="container">
 
         <h1>
-
-            Find Your
-
-            <span>Perfect Internship</span>
-
+            Find Your Best Internship
         </h1>
 
-
         <p>
-
-            Search real internships and discover
-            opportunities matching your skills
-            and career interests.
-
+            AI-powered internship recommendations based on
+            your skills, education, career goals and preferences.
         </p>
 
+    </div>
 
-        <!-- SEARCH -->
+</section>
 
-        <div class="search-container">
+
+<!-- =====================================================
+     FORM
+===================================================== -->
+
+<main class="container">
+
+
+<form
+    id="internshipForm"
+    class="form-container"
+>
+
+
+<!-- PERSONAL -->
+
+<section class="form-section">
+
+    <h2 class="section-title">
+        <span class="section-number">01</span>
+        Personal Information
+    </h2>
+
+    <div class="form-grid">
+
+        <div class="field">
+
+            <label>Full Name</label>
 
             <input
-
                 type="text"
-
-                id="keyword"
-
-                placeholder="Search Python, AI, Machine Learning, Data Science..."
-
-                autocomplete="off"
-
+                name="full_name"
+                placeholder="Enter your full name"
             >
-
-
-            <button
-
-                id="searchBtn"
-
-                onclick="searchInternships()"
-
-            >
-
-                🔍 Search
-
-            </button>
 
         </div>
 
+        <div class="field">
 
-        <!-- QUICK SEARCH -->
+            <label>Email Address</label>
 
-        <div class="quick-search">
+            <input
+                type="email"
+                name="email"
+                placeholder="you@example.com"
+                required
+            >
 
-            <span>
-                Quick search:
-            </span>
+        </div>
 
+        <div class="field">
 
-            <button
-                onclick="quickSearch('Python')">
+            <label>Phone Number</label>
 
-                Python
+            <input
+                type="tel"
+                name="phone"
+                placeholder="+91 XXXXX XXXXX"
+            >
 
-            </button>
+        </div>
 
+        <div class="field">
 
-            <button
-                onclick="quickSearch('AI')">
+            <label>Country / City</label>
 
-                AI
-
-            </button>
-
-
-            <button
-                onclick="quickSearch('Machine Learning')">
-
-                Machine Learning
-
-            </button>
-
-
-            <button
-                onclick="quickSearch('Data Science')">
-
-                Data Science
-
-            </button>
-
-
-            <button
-                onclick="quickSearch('AIML')">
-
-                AIML
-
-            </button>
+            <input
+                type="text"
+                name="city"
+                placeholder="Mangalore, India"
+            >
 
         </div>
 
@@ -478,91 +711,365 @@
 </section>
 
 
+<!-- EDUCATION -->
 
-<!-- =====================================
-     RESULTS
-====================================== -->
+<section class="form-section">
 
-<section class="results-section">
+    <h2 class="section-title">
+        <span class="section-number">02</span>
+        Education Details
+    </h2>
 
+    <div class="form-grid">
 
-    <div class="results-header">
+        <div class="field">
 
+            <label>College / University Name</label>
 
-        <div>
-
-            <h2>
-
-                Internship Opportunities
-
-            </h2>
-
-
-            <p id="resultMessage">
-
-                Search for an internship
-                to get started.
-
-            </p>
+            <input
+                type="text"
+                name="college"
+                placeholder="Enter college or university"
+            >
 
         </div>
+
+        <div class="field">
+
+            <label>Degree / Course</label>
+
+            <input
+                type="text"
+                name="degree"
+                placeholder="B.E Computer Science"
+            >
+
+        </div>
+
+        <div class="field">
+
+            <label>Current Year of Study</label>
+
+            <select name="year">
+
+                <option value="">
+                    Select year
+                </option>
+
+                <option>1st Year</option>
+                <option>2nd Year</option>
+                <option>3rd Year</option>
+                <option>4th Year</option>
+                <option>Graduate</option>
+
+            </select>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- SKILLS -->
+
+<section class="form-section">
+
+    <h2 class="section-title">
+        <span class="section-number">03</span>
+        Skills & Profile
+    </h2>
+
+    <div class="form-grid">
+
+        <div class="field full-width">
+
+            <label>Technical Skills</label>
+
+            <input
+                type="text"
+                name="technical_skills"
+                placeholder="Python, TensorFlow, React, OpenCV, SQL"
+            >
+
+        </div>
+
+        <div class="field">
+
+            <label>GitHub</label>
+
+            <input
+                type="text"
+                name="github"
+                placeholder="GitHub profile"
+            >
+
+        </div>
+
+        <div class="field">
+
+            <label>LinkedIn</label>
+
+            <input
+                type="text"
+                name="linkedin"
+                placeholder="LinkedIn profile"
+            >
+
+        </div>
+
+        <div class="field full-width">
+
+            <label>Portfolio</label>
+
+            <input
+                type="text"
+                name="portfolio"
+                placeholder="Portfolio URL (optional)"
+            >
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- PREFERENCES -->
+
+<section class="form-section">
+
+    <h2 class="section-title">
+        <span class="section-number">04</span>
+        Internship Preferences
+    </h2>
+
+    <div class="form-grid">
+
+        <div class="field">
+
+            <label>Preferred Internship Role</label>
+
+            <select name="preferred_role">
+
+                <option value="">
+                    Select role
+                </option>
+
+                <option>Python Developer</option>
+                <option>Software Developer</option>
+                <option>Web Developer</option>
+                <option>Data Analyst</option>
+                <option>Data Scientist</option>
+                <option>Machine Learning</option>
+                <option>AI</option>
+                <option>Full Stack Developer</option>
+                <option>Java Developer</option>
+                <option>Other</option>
+
+            </select>
+
+        </div>
+
+        <div class="field">
+
+            <label>Location Preference</label>
+
+            <select name="location_preference">
+
+                <option value="">
+                    Select preference
+                </option>
+
+                <option>Remote</option>
+                <option>Onsite</option>
+                <option>Hybrid</option>
+                <option>India</option>
+
+            </select>
+
+        </div>
+
+        <div class="field">
+
+            <label>Stipend Preference</label>
+
+            <select name="stipend_preference">
+
+                <option value="">
+                    Select preference
+                </option>
+
+                <option>Yes</option>
+                <option>No</option>
+
+            </select>
+
+        </div>
+
+        <div class="field">
+
+            <label>Duration Preference</label>
+
+            <select name="duration_preference">
+
+                <option value="">
+                    Select duration
+                </option>
+
+                <option>1 month</option>
+                <option>3 months</option>
+                <option>6 months</option>
+                <option>12 months</option>
+
+            </select>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- QUESTIONS -->
+
+<section class="form-section">
+
+    <h2 class="section-title">
+        <span class="section-number">05</span>
+        Application Questions
+    </h2>
+
+    <div class="form-grid">
+
+        <div class="field full-width">
+
+            <label>
+                Coding / AI Project Experience
+            </label>
+
+            <textarea
+                name="projects"
+                placeholder="Tell us about your projects and experience."
+            ></textarea>
+
+        </div>
+
+        <div class="field full-width">
+
+            <label>
+                What kind of internship experience do you want?
+            </label>
+
+            <textarea
+                name="experience"
+                placeholder="Tell us what you want to learn or work on."
+            ></textarea>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- BUTTONS -->
+
+<div class="form-buttons">
+
+    <button
+        type="button"
+        class="details-btn"
+        onclick="showProfileDetails()"
+    >
+        View Details
+    </button>
+
+    <button
+        type="submit"
+        class="best-btn"
+    >
+        Find My Best Internship
+    </button>
+
+</div>
+
+
+</form>
+
+
+<!-- =====================================================
+     LOADING
+===================================================== -->
+
+<div id="loading">
+
+    <div class="loader"></div>
+
+    <strong>
+        Finding your best internships...
+    </strong>
+
+    <p>
+        Searching live opportunities and analyzing your profile.
+    </p>
+
+</div>
+
+
+<!-- =====================================================
+     RECOMMENDATIONS
+===================================================== -->
+
+<section id="recommendations">
+
+    <div class="recommendation-header">
+
+        <h2>
+            Your Best Internship Matches
+        </h2>
+
+        <p id="resultCount"></p>
+
+    </div>
+
+
+    <div
+        id="aiBox"
+        class="ai-box"
+    ></div>
+
+
+    <div
+        id="resultsGrid"
+        class="results-grid"
+    ></div>
+
+</section>
+
+
+<!-- =====================================================
+     INTERNSHIP DETAILS
+===================================================== -->
+
+<section id="internshipDetails">
+
+    <div class="details-wrapper">
+
+        <button
+            class="back-btn"
+            onclick="backToRecommendations()"
+        >
+            ← Back to internship matches
+        </button>
 
 
         <div
-            id="resultCount"
-            class="result-count">
-
-        </div>
-
-    </div>
-
-
-
-    <!-- LOADING -->
-
-    <div
-        id="loading"
-        class="loading hidden">
-
-        <div class="spinner"></div>
-
-
-        <h3>
-
-            Searching real internships...
-
-        </h3>
-
-
-        <p>
-
-            Please wait while we find
-            opportunities.
-
-        </p>
+            id="detailsContent"
+            class="details-card"
+        ></div>
 
     </div>
-
-
-
-    <!-- ERROR -->
-
-    <div
-        id="error"
-        class="error hidden">
-
-    </div>
-
-
-
-    <!-- RESULTS -->
-
-    <div
-        id="results"
-        class="results-grid">
-
-    </div>
-
 
 </section>
 
@@ -570,1068 +1077,1063 @@
 </main>
 
 
+<footer id="about">
 
-<!-- =====================================
-     DETAILS MODAL
-====================================== -->
-
-<div
-
-    id="detailsModal"
-
-    class="details-modal"
-
-    onclick="closeModalOutside(event)"
-
->
-
-
-    <div
-
-        class="details-box"
-
-        onclick="event.stopPropagation()"
-
-    >
-
-
-        <button
-
-            class="close-details"
-
-            onclick="closeDetails()"
-
-        >
-
-            ×
-
-        </button>
-
-
-        <div id="detailsContent"></div>
-
-
-    </div>
-
-</div>
-
-
-
-<!-- =====================================
-     FOOTER
-====================================== -->
-
-<footer>
-
-    <p>
-
-        AI Internship Search &
-        Recommendation Agent
-
-    </p>
-
-
-    <span>
-
-        Real internship opportunities •
-        AI-powered recommendations
-
-    </span>
+    AI Internship Agent · Personalized internship discovery
 
 </footer>
 
 
+<!-- =====================================================
+     JAVASCRIPT
+===================================================== -->
 
 <script>
 
 
-/* =====================================
-   STORE RESULTS
-====================================== */
+/* =====================================================
+   FORM SUBMISSION
+===================================================== */
 
-let internshipResults = [];
+document
+.getElementById("internshipForm")
+.addEventListener(
+    "submit",
+    async function(event) {
 
-
-
-/* =====================================
-   ENTER KEY SEARCH
-====================================== */
-
-const keywordInput =
-    document.getElementById("keyword");
+        event.preventDefault();
 
 
-keywordInput.addEventListener(
+        const form = event.target;
 
-    "keydown",
+        const formData =
+            new FormData(form);
 
-    function(event) {
+        const data = {};
 
-        if (event.key === "Enter") {
 
-            searchInternships();
+        formData.forEach(
+            function(value, key) {
+
+                data[key] = value;
+
+            }
+        );
+
+
+        /* ---------------------------------------------
+           BACKEND MAPPING
+        --------------------------------------------- */
+
+        data.keyword =
+            data.preferred_role ||
+            data.technical_skills ||
+            "Python";
+
+
+        data.location =
+            data.city ||
+            data.location_preference ||
+            "India";
+
+
+        data.skills =
+            data.technical_skills || "";
+
+
+        data.role =
+            data.preferred_role || "";
+
+
+        data.domain = "";
+
+        data.query = "";
+
+        data.user_id =
+            data.email || "guest";
+
+
+        /* ---------------------------------------------
+           LOADING
+        --------------------------------------------- */
+
+        document
+        .getElementById("loading")
+        .style.display = "block";
+
+
+        document
+        .getElementById("recommendations")
+        .style.display = "none";
+
+
+        document
+        .getElementById("internshipDetails")
+        .style.display = "none";
+
+
+        try {
+
+
+            const response =
+                await fetch(
+                    "/search",
+                    {
+
+                        method: "POST",
+
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
+
+                        body:
+                            JSON.stringify(data)
+
+                    }
+                );
+
+
+            const result =
+                await response.json();
+
+
+            console.log(
+                "Backend response:",
+                result
+            );
+
+
+            if (
+                !response.ok ||
+                !result.success
+            ) {
+
+                alert(
+                    result.message ||
+                    "Unable to find internships."
+                );
+
+                return;
+            }
+
+
+            displayResults(result);
+
+
+        }
+        catch(error) {
+
+            console.error(
+                error
+            );
+
+            alert(
+                "Unable to connect to the internship server."
+            );
+
+        }
+        finally {
+
+            document
+            .getElementById("loading")
+            .style.display = "none";
 
         }
 
     }
-
 );
 
 
+/* =====================================================
+   DISPLAY RESULTS
+===================================================== */
 
-/* =====================================
-   QUICK SEARCH
-====================================== */
+function displayResults(result) {
 
-function quickSearch(keyword) {
 
-    keywordInput.value = keyword;
+    const section =
+        document.getElementById(
+            "recommendations"
+        );
 
-    searchInternships();
+
+    const grid =
+        document.getElementById(
+            "resultsGrid"
+        );
+
+
+    const count =
+        document.getElementById(
+            "resultCount"
+        );
+
+
+    const aiBox =
+        document.getElementById(
+            "aiBox"
+        );
+
+
+    section.style.display = "block";
+
+
+    count.textContent =
+        `${result.count || 0} internship opportunities found`;
+
+
+    aiBox.innerHTML = `
+        <div class="ai-answer">
+            <h3>AI Recommendation</h3>
+            <p>success</p>
+        </div>
+    `;
+if (
+        !result.results ||
+        result.results.length === 0
+    ) {
+
+        grid.innerHTML = `
+
+            <div
+                style="grid-column:1/-1;"
+                class="no-results"
+            >
+
+                No matching internships found.
+
+            </div>
+
+        `;
+
+        return;
+    }
+
+
+    grid.innerHTML =
+        result.results
+        .map(
+            function(internship, index) {
+
+                return createCard(
+                    internship,
+                    index
+                );
+
+            }
+        )
+        .join("");
+
+
+    section.scrollIntoView({
+        behavior: "smooth"
+    });
 
 }
 
 
+/* =====================================================
+   CREATE CARD
+===================================================== */
 
-/* =====================================
-   SEARCH INTERNSHIPS
-====================================== */
-
-async function searchInternships() {
-
-
-    const keyword =
-        keywordInput.value.trim();
+function createCard(
+    internship,
+    index
+) {
 
 
-    if (!keyword) {
+    const score =
+        internship.match_score || 0;
 
-        showError(
-            "Please enter an internship skill or keyword."
-        );
 
-        return;
+    const title =
+        internship.title ||
+        "Internship";
+
+
+    const company =
+        internship.company ||
+        "Company not specified";
+
+
+    const location =
+        internship.location ||
+        "Location not specified";
+
+
+    const stipend =
+        internship.stipend ||
+        "Not specified";
+
+
+    const duration =
+        internship.duration ||
+        "Not specified";
+
+
+    const source =
+        internship.source ||
+        "Internship source";
+
+
+    let skills =
+        internship.skills || [];
+
+
+    if (!Array.isArray(skills)) {
+
+        skills =
+            String(skills)
+            .split(",")
+            .map(
+                s => s.trim()
+            )
+            .filter(Boolean);
 
     }
 
 
-    const searchBtn =
-        document.getElementById("searchBtn");
+    const skillHTML =
+        skills
+        .slice(0, 8)
+        .map(
+            skill => `
+                <span class="skill">
+                    ${escapeHTML(skill)}
+                </span>
+            `
+        )
+        .join("");
 
 
-    const loading =
-        document.getElementById("loading");
+    const bestLabel =
+        index === 0
+        ? `<span class="best-label">BEST MATCH</span>`
+        : "";
 
 
-    const results =
-        document.getElementById("results");
+    return `
+
+        <article class="internship-card">
+
+            ${bestLabel}
+
+            <div class="match-score">
+
+                ${score}% Match
+
+            </div>
+
+            <h3>
+                ${escapeHTML(title)}
+            </h3>
+
+            <p class="company">
+                ${escapeHTML(company)}
+            </p>
+
+            <p class="info">
+                📍 ${escapeHTML(location)}
+            </p>
+
+            <p class="info">
+                💰 ${escapeHTML(stipend)}
+            </p>
+
+            <p class="info">
+                ⏱ ${escapeHTML(duration)}
+            </p>
 
 
-    const error =
-        document.getElementById("error");
+            <div class="skills-title">
+                Skills
+            </div>
 
 
-    const resultMessage =
-        document.getElementById("resultMessage");
+            <div class="skills">
+
+                ${
+                    skillHTML ||
+                    `<span class="skill">
+                        Not specified
+                     </span>`
+                }
+
+            </div>
 
 
-    const resultCount =
-        document.getElementById("resultCount");
+            <p class="source">
+
+                Source:
+                ${escapeHTML(source)}
+
+            </p>
 
 
-    /* Clear previous results */
-
-    results.innerHTML = "";
-
-    internshipResults = [];
+            <div class="card-buttons">
 
 
-    error.classList.add("hidden");
+                <button
+                    type="button"
+                    class="save-btn"
+                    onclick='saveInternship(
+                        ${JSON.stringify(internship)}
+                    )'
+                >
 
-    loading.classList.remove("hidden");
+                    ♡ Save
 
-    resultCount.textContent = "";
-
-
-    searchBtn.disabled = true;
-
-    searchBtn.innerHTML =
-        "⏳ Searching...";
+                </button>
 
 
-    resultMessage.textContent =
-        `Searching internships for "${keyword}"...`;
+                <button
+                    type="button"
+                    class="view-btn"
+                    onclick='viewInternship(
+                        ${JSON.stringify(internship)}
+                    )'
+                >
+
+                    View Internship
+
+                </button>
+
+
+            </div>
+
+        </article>
+
+    `;
+
+}
+
+
+/* =====================================================
+   VIEW INTERNSHIP DETAILS
+===================================================== */
+
+function viewInternship(
+    internship
+) {
+
+
+    /* ---------------------------------------------
+       HIDE FORM AND RECOMMENDATIONS
+    --------------------------------------------- */
+
+    document
+    .getElementById("internshipForm")
+    .style.display = "none";
+
+
+    document
+    .getElementById("recommendations")
+    .style.display = "none";
+
+
+    /* ---------------------------------------------
+       SHOW DETAILS
+    --------------------------------------------- */
+
+    const detailsSection =
+        document.getElementById(
+            "internshipDetails"
+        );
+
+
+    const detailsContent =
+        document.getElementById(
+            "detailsContent"
+        );
+
+
+    detailsSection.style.display =
+        "block";
+
+
+    /* ---------------------------------------------
+       DATA
+    --------------------------------------------- */
+
+    const title =
+        internship.title ||
+        "Internship";
+
+
+    const company =
+        internship.company ||
+        "Company not specified";
+
+
+    const location =
+        internship.location ||
+        "Location not specified";
+
+
+    const stipend =
+        internship.stipend ||
+        "Not specified";
+
+
+    const duration =
+        internship.duration ||
+        "Not specified";
+
+
+    const score =
+        internship.match_score || 0;
+
+
+    const applyUrl =
+        internship.apply_url ||
+        "";
+
+
+    const description =
+        internship.description ||
+        "";
+
+
+    let skills =
+        internship.skills || [];
+
+
+    if (!Array.isArray(skills)) {
+
+        skills =
+            String(skills)
+            .split(",")
+            .map(
+                s => s.trim()
+            )
+            .filter(Boolean);
+
+    }
+
+
+    const skillsHTML =
+        skills
+        .map(
+            skill => `
+                <span class="skill">
+                    ${escapeHTML(skill)}
+                </span>
+            `
+        )
+        .join("");
+
+
+    /* ---------------------------------------------
+       NATURAL LANGUAGE DESCRIPTION
+    --------------------------------------------- */
+
+    let naturalDescription = "";
+
+
+    if (description) {
+
+        naturalDescription =
+            description;
+
+    }
+    else {
+
+        naturalDescription =
+
+            `This ${title} internship at ${company}
+             is an opportunity for students and
+             early-career candidates to gain practical
+             experience in this field. The role is based
+             in ${location}. Candidates should review the
+             company requirements and internship details
+             before applying.`;
+
+    }
+
+
+    /* ---------------------------------------------
+       APPLY BUTTON
+    --------------------------------------------- */
+
+    let applyButton = "";
+
+
+    if (applyUrl && applyUrl !== "#") {
+
+        applyButton = `
+
+            <a
+                class="apply-now"
+                href="${escapeAttribute(applyUrl)}"
+                target="_blank"
+                rel="noopener noreferrer"
+                onclick='trackInternship(
+                    "apply",
+                    ${JSON.stringify(internship)}
+                )'
+            >
+
+                Apply Now ↗
+
+            </a>
+
+        `;
+
+    }
+    else {
+
+        applyButton = `
+
+            <span class="no-apply">
+
+                Application link not available
+
+            </span>
+
+        `;
+
+    }
+
+
+    /* ---------------------------------------------
+       DETAILS HTML
+    --------------------------------------------- */
+
+    detailsContent.innerHTML = `
+
+        <div class="details-match">
+
+            ${score}% Match
+
+        </div>
+
+
+        <h2>
+
+            ${escapeHTML(title)}
+
+        </h2>
+
+
+        <p class="details-company">
+
+            ${escapeHTML(company)}
+
+        </p>
+
+
+        <div class="details-info-grid">
+
+
+            <div class="details-info">
+
+                <strong>
+                    Location
+                </strong>
+
+                <span>
+                    ${escapeHTML(location)}
+                </span>
+
+            </div>
+
+
+            <div class="details-info">
+
+                <strong>
+                    Stipend
+                </strong>
+
+                <span>
+                    ${escapeHTML(stipend)}
+                </span>
+
+            </div>
+
+
+            <div class="details-info">
+
+                <strong>
+                    Duration
+                </strong>
+
+                <span>
+                    ${escapeHTML(duration)}
+                </span>
+
+            </div>
+
+
+            <div class="details-info">
+
+                <strong>
+                    Source
+                </strong>
+
+                <span>
+                    ${escapeHTML(
+                        internship.source ||
+                        "Internship source"
+                    )}
+                </span>
+
+            </div>
+
+
+        </div>
+
+
+        <div class="details-section">
+
+            <h3>
+                About this internship
+            </h3>
+
+            <p class="details-description">
+
+                ${escapeHTML(
+                    naturalDescription
+                )}
+
+            </p>
+
+        </div>
+
+
+        <div class="details-section">
+
+            <h3>
+                Skills
+            </h3>
+
+            <div class="details-skills">
+
+                ${
+                    skillsHTML ||
+                    `<span class="skill">
+                        Not specified
+                     </span>`
+                }
+
+            </div>
+
+        </div>
+
+
+        ${applyButton}
+
+    `;
+
+
+    /* ---------------------------------------------
+       TRACK VIEW
+    --------------------------------------------- */
+
+    trackInternship(
+        "view",
+        internship
+    );
+
+
+    /* ---------------------------------------------
+       SCROLL TOP
+    --------------------------------------------- */
+
+    window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+    });
+
+}
+
+
+/* =====================================================
+   BACK TO RECOMMENDATIONS
+===================================================== */
+
+function backToRecommendations() {
+
+
+    document
+    .getElementById("internshipDetails")
+    .style.display = "none";
+
+
+    document
+    .getElementById("internshipForm")
+    .style.display = "block";
+
+
+    document
+    .getElementById("recommendations")
+    .style.display = "block";
+
+
+    document
+    .getElementById("recommendations")
+    .scrollIntoView({
+        behavior: "smooth"
+    });
+
+}
+
+
+/* =====================================================
+   SAVE
+===================================================== */
+
+async function saveInternship(
+    internship
+) {
+
+
+    const userId =
+        document.querySelector(
+            '[name="email"]'
+        )?.value ||
+        "guest";
 
 
     try {
 
+        const response =
+            await fetch(
+                "/track",
+                {
 
-        const response = await fetch(
+                    method: "POST",
 
-            "/search",
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
 
+                    body: JSON.stringify({
+
+                        user_id:
+                            userId,
+
+                        action:
+                            "save",
+
+                        internship_id:
+                            internship.internship_id || "",
+
+                        title:
+                            internship.title || "",
+
+                        company:
+                            internship.company || "",
+
+                        skills:
+                            internship.skills || "",
+
+                        role:
+                            internship.role || "",
+
+                        location:
+                            internship.location || "",
+
+                        search_keyword:
+                            internship.title || ""
+
+                    })
+
+                }
+            );
+
+
+        const result =
+            await response.json();
+
+
+        if (result.success) {
+
+            alert(
+                "Internship saved successfully!"
+            );
+
+        }
+
+    }
+    catch(error) {
+
+        console.log(
+            "Save error:",
+            error
+        );
+
+    }
+
+}
+
+
+/* =====================================================
+   TRACK VIEW / APPLY
+===================================================== */
+
+async function trackInternship(
+    action,
+    internship
+) {
+
+
+    const userId =
+        document.querySelector(
+            '[name="email"]'
+        )?.value ||
+        "guest";
+
+
+    try {
+
+        await fetch(
+            "/track",
             {
 
                 method: "POST",
 
                 headers: {
-
                     "Content-Type":
                         "application/json"
-
                 },
 
                 body: JSON.stringify({
 
-                    keyword: keyword
+                    user_id:
+                        userId,
+
+                    action:
+                        action,
+
+                    internship_id:
+                        internship.internship_id || "",
+
+                    title:
+                        internship.title || "",
+
+                    company:
+                        internship.company || "",
+
+                    skills:
+                        internship.skills || "",
+
+                    role:
+                        internship.role || "",
+
+                    location:
+                        internship.location || "",
+
+                    search_keyword:
+                        internship.title || ""
 
                 })
 
             }
-
         );
 
+    }
+    catch(error) {
 
-        const data =
-            await response.json();
-
-
-        loading.classList.add("hidden");
-
-
-        if (
-            !response.ok ||
-            !data.success
-        ) {
-
-            throw new Error(
-
-                data.message ||
-                "Unable to search internships."
-
-            );
-
-        }
-
-
-        /*
-         Store exact results returned
-         by your backend.
-        */
-
-        internshipResults =
-            Array.isArray(data.results)
-                ? data.results
-                : [];
-
-
-        displayResults(
-            internshipResults,
-            keyword
+        console.log(
+            "Tracking error:",
+            error
         );
-
-
-    }
-
-
-    catch (err) {
-
-
-        loading.classList.add("hidden");
-
-
-        showError(err.message);
-
-
-        resultMessage.textContent =
-            "Search could not be completed.";
-
-    }
-
-
-    finally {
-
-
-        searchBtn.disabled = false;
-
-
-        searchBtn.innerHTML =
-            "🔍 Search";
 
     }
 
 }
 
 
+/* =====================================================
+   PROFILE DETAILS
+===================================================== */
 
-/* =====================================
-   DISPLAY RESULTS
-====================================== */
+function showProfileDetails() {
 
-function displayResults(
-    results,
-    keyword
-) {
 
+    const form =
+        document.getElementById(
+            "internshipForm"
+        );
 
-    const container =
-        document.getElementById("results");
 
+    const data =
+        new FormData(form);
 
-    const resultMessage =
-        document.getElementById("resultMessage");
 
+    let text =
+        "Your Profile Details\n\n";
 
-    const resultCount =
-        document.getElementById("resultCount");
 
+    data.forEach(
+        function(value, key) {
 
-    resultCount.textContent =
-        `${results.length} opportunities`;
+            if (value.trim()) {
 
-
-    if (!results.length) {
-
-
-        resultMessage.textContent =
-            `No internships found for "${keyword}".`;
-
-
-        container.innerHTML = `
-
-            <div class="empty">
-
-                <div class="empty-icon">
-                    🔎
-                </div>
-
-                <h3>
-                    No internships found
-                </h3>
-
-                <p>
-                    Try another keyword such as
-                    Python, AI or Data Science.
-                </p>
-
-            </div>
-
-        `;
-
-
-        return;
-
-    }
-
-
-    resultMessage.textContent =
-        `Showing real internship opportunities for "${keyword}".`;
-
-
-    container.innerHTML =
-
-        results.map(
-
-            (item, index) => {
-
-
-                const title =
-                    item.title ||
-                    "Internship Opportunity";
-
-
-                const company =
-                    item.company ||
-                    "Organization not specified";
-
-
-                const location =
-                    item.location ||
-                    "Location not specified";
-
-
-                const duration =
-                    item.duration ||
-                    "Not specified";
-
-
-                const stipend =
-                    item.stipend ||
-                    "Not specified";
-
-
-                const matchScore =
-                    item.match_score ??
-                    item.score ??
-                    null;
-
-
-                return `
-
-                    <div class="internship-card">
-
-
-                        <div class="card-top">
-
-
-                            <div class="number">
-
-                                ${index + 1}
-
-                            </div>
-
-
-                            <div class="card-title">
-
-                                <h3>
-
-                                    ${escapeHtml(title)}
-
-                                </h3>
-
-
-                                <p>
-
-                                    🏢
-                                    ${escapeHtml(company)}
-
-                                </p>
-
-                            </div>
-
-
-                        </div>
-
-
-
-                        <div class="details">
-
-
-                            <div class="detail">
-
-                                <span>
-                                    📍
-                                </span>
-
-
-                                <div>
-
-                                    <small>
-                                        Location
-                                    </small>
-
-
-                                    <strong>
-
-                                        ${escapeHtml(location)}
-
-                                    </strong>
-
-                                </div>
-
-                            </div>
-
-
-
-                            <div class="detail">
-
-                                <span>
-                                    ⏱️
-                                </span>
-
-
-                                <div>
-
-                                    <small>
-                                        Duration
-                                    </small>
-
-
-                                    <strong>
-
-                                        ${escapeHtml(duration)}
-
-                                    </strong>
-
-                                </div>
-
-                            </div>
-
-
-
-                            <div class="detail">
-
-                                <span>
-                                    💰
-                                </span>
-
-
-                                <div>
-
-                                    <small>
-                                        Stipend
-                                    </small>
-
-
-                                    <strong>
-
-                                        ${escapeHtml(stipend)}
-
-                                    </strong>
-
-                                </div>
-
-                            </div>
-
-
-                        </div>
-
-
-
-                        ${
-                            matchScore !== null
-
-                            ?
-
-                            `
-
-                            <div class="match-score">
-
-                                🎯 Match Score:
-                                ${escapeHtml(matchScore)}
-
-                            </div>
-
-                            `
-
-                            :
-
-                            ""
-
-                        }
-
-
-
-                        <!-- ONLY VIEW DETAILS -->
-
-                        <button
-
-                            class="view-details-btn"
-
-                            onclick="openDetails(${index})"
-
-                        >
-
-                            View Details →
-
-                        </button>
-
-
-                    </div>
-
-                `;
+                text +=
+                    key
+                    .replace(
+                        /_/g,
+                        " "
+                    ) +
+                    ": " +
+                    value +
+                    "\n";
 
             }
 
-        ).join("");
-
-}
-
-
-
-/* =====================================
-   OPEN DETAILS
-====================================== */
-
-function openDetails(index) {
-
-
-    /*
-     Get EXACT internship clicked.
-    */
-
-    const item =
-        internshipResults[index];
-
-
-    if (!item) {
-
-        showError(
-            "Unable to load internship details."
-        );
-
-        return;
-
-    }
-
-
-    const title =
-        item.title ||
-        "Internship Opportunity";
-
-
-    const company =
-        item.company ||
-        "Organization not specified";
-
-
-    const location =
-        item.location ||
-        "Location not specified";
-
-
-    const skills =
-        item.skills ||
-        item.skill ||
-        "Not specified";
-
-
-    const eligibility =
-        item.eligibility ||
-        "Not specified";
-
-
-    const duration =
-        item.duration ||
-        "Not specified";
-
-
-    const stipend =
-        item.stipend ||
-        "Not specified";
-
-
-    const type =
-        item.type ||
-        item.internship_type ||
-        "Internship";
-
-
-    const matchScore =
-        item.match_score ??
-        item.score ??
-        null;
-
-
-    const url =
-        item.url ||
-        item.apply_url ||
-        "#";
-
-
-    let matchHTML = "";
-
-
-    if (matchScore !== null) {
-
-        matchHTML = `
-
-            <div class="info-box">
-
-                <span class="info-label">
-
-                    🎯 Match Score
-
-                </span>
-
-
-                <span class="info-value">
-
-                    ${escapeHtml(matchScore)}
-
-                </span>
-
-            </div>
-
-        `;
-
-    }
-
-
-    /*
-     Details contain ONLY:
-     Title
-     Company
-     Location
-     Skills
-     Eligibility
-     Duration
-     Stipend
-     Type
-     Match Score
-     Apply Now
-    */
-
-    document.getElementById(
-        "detailsContent"
-    ).innerHTML = `
-
-
-        <h2 class="details-title">
-
-            ${escapeHtml(title)}
-
-        </h2>
-
-
-
-        <div class="details-company">
-
-            🏢 ${escapeHtml(company)}
-
-        </div>
-
-
-
-        <div class="details-info">
-
-
-            <div class="info-box">
-
-                <span class="info-label">
-
-                    📍 Location
-
-                </span>
-
-
-                <span class="info-value">
-
-                    ${escapeHtml(location)}
-
-                </span>
-
-            </div>
-
-
-
-            <div class="info-box">
-
-                <span class="info-label">
-
-                    🧠 Skills
-
-                </span>
-
-
-                <span class="info-value">
-
-                    ${escapeHtml(
-                        formatList(skills)
-                    )}
-
-                </span>
-
-            </div>
-
-
-
-            <div class="info-box">
-
-                <span class="info-label">
-
-                    🎓 Eligibility
-
-                </span>
-
-
-                <span class="info-value">
-
-                    ${escapeHtml(
-                        formatList(eligibility)
-                    )}
-
-                </span>
-
-            </div>
-
-
-
-            <div class="info-box">
-
-                <span class="info-label">
-
-                    ⏱️ Duration
-
-                </span>
-
-
-                <span class="info-value">
-
-                    ${escapeHtml(duration)}
-
-                </span>
-
-            </div>
-
-
-
-            <div class="info-box">
-
-                <span class="info-label">
-
-                    💰 Stipend
-
-                </span>
-
-
-                <span class="info-value">
-
-                    ${escapeHtml(stipend)}
-
-                </span>
-
-            </div>
-
-
-
-            <div class="info-box">
-
-                <span class="info-label">
-
-                    💼 Type
-
-                </span>
-
-
-                <span class="info-value">
-
-                    ${escapeHtml(type)}
-
-                </span>
-
-            </div>
-
-
-
-            ${matchHTML}
-
-
-        </div>
-
-
-
-        <!-- FINAL APPLY BUTTON -->
-
-        <a
-
-            class="final-apply"
-
-            href="${escapeAttribute(url)}"
-
-            target="_blank"
-
-            rel="noopener noreferrer"
-
-        >
-
-            🚀 Apply Now
-
-        </a>
-
-    `;
-
-
-    document.getElementById(
-        "detailsModal"
-    ).classList.add("active");
-
-
-    document.body.style.overflow =
-        "hidden";
-
-}
-
-
-
-/* =====================================
-   CLOSE DETAILS
-====================================== */
-
-function closeDetails() {
-
-
-    document.getElementById(
-        "detailsModal"
-    ).classList.remove("active");
-
-
-    document.body.style.overflow = "";
-
-}
-
-
-
-/* =====================================
-   CLOSE OUTSIDE MODAL
-====================================== */
-
-function closeModalOutside(event) {
-
-
-    if (
-        event.target.id ===
-        "detailsModal"
-    ) {
-
-        closeDetails();
-
-    }
-
-}
-
-
-
-/* =====================================
-   ESC KEY
-====================================== */
-
-document.addEventListener(
-
-    "keydown",
-
-    function(event) {
-
-        if (event.key === "Escape") {
-
-            closeDetails();
-
         }
-
-    }
-
-);
-
-
-
-/* =====================================
-   FORMAT LIST
-====================================== */
-
-function formatList(value) {
-
-
-    if (
-        value === null ||
-        value === undefined ||
-        value === ""
-    ) {
-
-        return "Not specified";
-
-    }
-
-
-    if (Array.isArray(value)) {
-
-        return value.join(", ");
-
-    }
-
-
-    return String(value)
-
-        .replace(
-            /[\[\]{}"]/g,
-            ""
-        )
-
-        .replace(
-            /\s*,\s*/g,
-            ", "
-        )
-
-        .trim()
-
-        || "Not specified";
-
-}
-
-
-
-/* =====================================
-   ERROR
-====================================== */
-
-function showError(message) {
-
-
-    const error =
-        document.getElementById("error");
-
-
-    error.textContent =
-        "⚠️ " + message;
-
-
-    error.classList.remove(
-        "hidden"
     );
 
+
+    alert(text);
+
 }
 
 
+/* =====================================================
+   SECURITY
+===================================================== */
 
-/* =====================================
-   HTML ESCAPE
-====================================== */
+function escapeHTML(value) {
 
-function escapeHtml(value) {
-
-
-    return String(value)
-
-        .replaceAll(
-            "&",
+    return String(value || "")
+        .replace(
+            /&/g,
             "&amp;"
         )
-
-        .replaceAll(
-            "<",
+        .replace(
+            /</g,
             "&lt;"
         )
-
-        .replaceAll(
-            ">",
+        .replace(
+            />/g,
             "&gt;"
         )
-
-        .replaceAll(
-            '"',
+        .replace(
+            /"/g,
             "&quot;"
         )
-
-        .replaceAll(
-            "'",
+        .replace(
+            /'/g,
             "&#039;"
         );
 
 }
 
 
-
-/* =====================================
-   URL ESCAPE
-====================================== */
-
 function escapeAttribute(value) {
 
-
-    return String(value)
-
-        .replaceAll(
-            '"',
-            "%22"
+    return String(value || "#")
+        .replace(
+            /"/g,
+            "&quot;"
         )
-
-        .replaceAll(
-            "<",
-            "%3C"
-        )
-
-        .replaceAll(
-            ">",
-            "%3E"
+        .replace(
+            /'/g,
+            "&#039;"
         );
 
 }

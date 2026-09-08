@@ -1,5 +1,6 @@
 import os
 import sys
+import time
 
 # ---------------------------------------------------------
 # PROJECT ROOT
@@ -28,6 +29,7 @@ try:
             ".env"
         )
     )
+
 except ImportError:
     pass
 
@@ -43,27 +45,41 @@ try:
         SYSTEM_PROMPT,
         build_user_prompt
     )
+
 except ImportError:
 
     SYSTEM_PROMPT = """
-You are an AI Internship Assistant.
-Help students find and understand suitable internships.
-"""
+    You are an AI Internship Recommendation Agent.
+
+    Help students find suitable internships based on
+    their skills, domain, preferred role, location,
+    projects and requirements.
+
+    Give clear and useful recommendations.
+    """
 
     def build_user_prompt(
         keyword,
         location,
-        internships
+        internships,
+        student_profile=None
     ):
+
         return f"""
-Find suitable internships for:
+        Find suitable internships for:
 
-Skill: {keyword}
-Location: {location}
+        Keyword: {keyword}
+        Location: {location}
 
-Internship opportunities:
-{internships}
-"""
+        Student Profile:
+        {student_profile}
+
+        Internship Opportunities:
+        {internships}
+
+        Recommend the most suitable internships.
+        Explain why they are suitable.
+        """
 
 
 # ---------------------------------------------------------
@@ -76,27 +92,41 @@ except ImportError:
     genai = None
 
 
-GEMINI_API_KEY = os.getenv(
-    "GEMINI_API_KEY"
-)
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 
 def create_gemini_client():
 
     if genai is None:
+
+        print("Gemini package is not installed.")
+
         return None
 
     if not GEMINI_API_KEY:
+
+        print("GEMINI_API_KEY was not found.")
+
         return None
 
     try:
-        return genai.Client(
+
+        client = genai.Client(
             api_key=GEMINI_API_KEY
         )
+
+        print(
+            "Gemini client created successfully."
+        )
+
+        return client
+
     except Exception as error:
+
         print(
             f"Gemini client error: {error}"
         )
+
         return None
 
 
@@ -111,6 +141,7 @@ def build_fallback_answer(
 ):
 
     if not internships:
+
         return (
             f"No internships were found for "
             f"'{keyword}' in '{location}'."
@@ -127,7 +158,7 @@ def build_fallback_answer(
     answer.append("")
 
     for index, internship in enumerate(
-        internships,
+        internships[:10],
         start=1
     ):
 
@@ -151,6 +182,11 @@ def build_fallback_answer(
             0
         )
 
+        skills = internship.get(
+            "skills",
+            "Not specified"
+        )
+
         answer.append(
             f"{index}. {title}"
         )
@@ -164,7 +200,11 @@ def build_fallback_answer(
         )
 
         answer.append(
-            f"   Match Score: {score}"
+            f"   Skills: {skills}"
+        )
+
+        answer.append(
+            f"   Match Score: {score}%"
         )
 
         answer.append("")
@@ -182,9 +222,10 @@ class InternshipAgent:
 
         self.client = create_gemini_client()
 
+        # Current Gemini models
         self.models = [
-            "gemini-2.5-flash",
-            "gemini-2.5-flash-lite"
+            "gemini-3.7-flash",
+            "gemini-3.8-flash"
         ]
 
 
@@ -195,14 +236,23 @@ class InternshipAgent:
     def search(
         self,
         keyword,
-        location="India"
+        location="India",
+        user_skills="",
+        user_domain="",
+        user_role="",
+        user_query=""
     ):
 
         try:
 
             return find_internships(
-                keyword,
-                location
+                keyword=keyword,
+                location=location,
+                user_skills=user_skills,
+                user_domain=user_domain,
+                user_role=user_role,
+                user_query=user_query,
+                include_live=True
             )
 
         except Exception as error:
@@ -222,37 +272,66 @@ class InternshipAgent:
         self,
         keyword,
         location="India",
+        user_skills="",
+        user_domain="",
+        user_role="",
+        user_query="",
         limit=20
     ):
 
         results = self.search(
-            keyword,
-            location
+            keyword=keyword,
+            location=location,
+            user_skills=user_skills,
+            user_domain=user_domain,
+            user_role=user_role,
+            user_query=user_query
         )
 
         return results[:limit]
 
 
     # -----------------------------------------------------
-    # ASK AI
+    # ASK GEMINI
     # -----------------------------------------------------
 
     def ask_ai(
         self,
         keyword,
         location="India",
-        limit=20
+        user_skills="",
+        user_domain="",
+        user_role="",
+        user_query="",
+        student_profile=None,
+        limit=20,
+        internships=None
     ):
 
-        results = self.get_top_matches(
-            keyword,
-            location,
-            limit
-        )
+        # IMPORTANT:
+        # If Flask already searched internships,
+        # use those results instead of searching again.
 
-        # -----------------------------------------------
-        # No results
-        # -----------------------------------------------
+        if internships is not None:
+
+            results = internships[:limit]
+
+        else:
+
+            results = self.get_top_matches(
+                keyword=keyword,
+                location=location,
+                user_skills=user_skills,
+                user_domain=user_domain,
+                user_role=user_role,
+                user_query=user_query,
+                limit=limit
+            )
+
+
+        # -------------------------------------------------
+        # NO RESULTS
+        # -------------------------------------------------
 
         if not results:
 
@@ -263,74 +342,145 @@ class InternshipAgent:
                     results
                 ),
                 "results": [],
+                "ai_status": "NO_RESULTS"
+            }
+
+
+        # -------------------------------------------------
+        # GEMINI NOT AVAILABLE
+        # -------------------------------------------------
+
+        if self.client is None:
+
+            print(
+                "Gemini is unavailable. "
+                "Using fallback recommendation."
+            )
+
+            return {
+                "answer": build_fallback_answer(
+                    keyword,
+                    location,
+                    results
+                ),
+                "results": results,
                 "ai_status": "FALLBACK"
             }
 
 
-        # -----------------------------------------------
-        # Gemini
-        # -----------------------------------------------
+        # -------------------------------------------------
+        # BUILD PROMPT
+        # -------------------------------------------------
 
-        if self.client is not None:
+        try:
 
-            try:
+            prompt = build_user_prompt(
+                keyword=keyword,
+                location=location,
+                internships=results,
+                student_profile=student_profile
+            )
 
-                internships_text = "\n\n".join(
-                    str(item)
-                    for item in results
-                )
+        except Exception as error:
 
-                prompt = build_user_prompt(
+            print(
+                f"Prompt creation error: {error}"
+            )
+
+            return {
+                "answer": build_fallback_answer(
                     keyword,
                     location,
-                    internships_text
-                )
+                    results
+                ),
+                "results": results,
+                "ai_status": "FALLBACK"
+            }
 
-                for model in self.models:
 
-                    try:
+        # -------------------------------------------------
+        # TRY GEMINI
+        # -------------------------------------------------
 
-                        response = (
-                            self.client.models.generate_content(
-                                model=model,
-                                contents=[
-                                    SYSTEM_PROMPT,
-                                    prompt
-                                ]
-                            )
+        for model in self.models:
+
+            print(
+                f"Trying Gemini model: {model}"
+            )
+
+            for attempt in range(2):
+
+                try:
+
+                    response = (
+                        self.client.models.generate_content(
+                            model=model,
+                            contents=prompt
                         )
+                    )
 
-                        answer = getattr(
-                            response,
-                            "text",
-                            None
-                        )
+                    answer = getattr(
+                        response,
+                        "text",
+                        None
+                    )
 
-                        if answer:
-
-                            return {
-                                "answer": answer,
-                                "results": results,
-                                "ai_status": "GEMINI"
-                            }
-
-                    except Exception as error:
+                    if answer:
 
                         print(
-                            f"Model {model} error: "
-                            f"{error}"
+                            f"Gemini response received "
+                            f"from {model}"
                         )
 
-            except Exception as error:
+                        return {
+                            "answer": answer,
+                            "results": results,
+                            "ai_status": "GEMINI"
+                        }
 
-                print(
-                    f"Gemini error: {error}"
-                )
+                    print(
+                        f"{model} returned empty response."
+                    )
+
+                except Exception as error:
+
+                    error_text = str(error)
+
+                    print(
+                        f"{model} attempt "
+                        f"{attempt + 1} failed:"
+                    )
+
+                    print(error_text)
 
 
-        # -----------------------------------------------
-        # Fallback
-        # -----------------------------------------------
+                    if (
+                        "503" in error_text
+                        or "429" in error_text
+                        or "500" in error_text
+                    ):
+
+                        if attempt == 0:
+
+                            print(
+                                "Retrying after 3 seconds..."
+                            )
+
+                            time.sleep(3)
+
+                            continue
+
+                    break
+
+
+        # -------------------------------------------------
+        # FINAL FALLBACK
+        # -------------------------------------------------
+
+        print(
+            "All Gemini attempts failed. "
+            "Using fallback recommendation."
+        )
 
         return {
             "answer": build_fallback_answer(
@@ -350,7 +500,11 @@ class InternshipAgent:
 if __name__ == "__main__":
 
     print("=" * 70)
-    print("INTERNSHIP AGENT")
+
+    print(
+        "INTERNSHIP AGENT TEST"
+    )
+
     print("=" * 70)
 
     keyword = input(
@@ -362,24 +516,76 @@ if __name__ == "__main__":
     ).strip()
 
     keyword = keyword or "Python"
+
     location = location or "Bangalore"
+
+
+    student_profile = {
+
+        "full_name": "Student",
+
+        "year": "3rd Year",
+
+        "college": "Example College",
+
+        "degree": "B.Tech Computer Science",
+
+        "skills": (
+            "Python, SQL, Flask, Machine Learning"
+        ),
+
+        "preferred_role": (
+            "Python Developer"
+        ),
+
+        "work_preference": "Remote",
+
+        "projects": (
+            "Built a Flask AI internship "
+            "recommendation project."
+        )
+    }
+
 
     agent = InternshipAgent()
 
+
     result = agent.ask_ai(
-        keyword,
-        location,
+
+        keyword=keyword,
+
+        location=location,
+
+        user_skills=student_profile["skills"],
+
+        user_domain=student_profile["degree"],
+
+        user_role=student_profile["preferred_role"],
+
+        user_query=student_profile["projects"],
+
+        student_profile=student_profile,
+
         limit=20
     )
 
-    print()
-    print("=" * 70)
-    print("INTERNSHIP AGENT RESULT")
-    print("=" * 70)
-
-    print(result["answer"])
 
     print()
+
+    print("=" * 70)
+
+    print(
+        "INTERNSHIP AGENT RESULT"
+    )
+
+    print("=" * 70)
+
+    print(
+        result["answer"]
+    )
+
+    print()
+
     print(
         f"AI Status : {result['ai_status']}"
     )
@@ -389,5 +595,9 @@ if __name__ == "__main__":
     )
 
     print("=" * 70)
-    print("AGENT TEST COMPLETED")
+
+    print(
+        "TEST COMPLETED"
+    )
+
     print("=" * 70)

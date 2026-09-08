@@ -1,38 +1,32 @@
-
-"""
-internship_ranker.py
-
-Ranks internship opportunities based on how well they match
-the user's requested skill and location.
-
-Scoring:
-- Skill match        : 40 points
-- Location match     : 30 points
-- Title match        : 10 points
-- Eligibility        : 10 points
-- Stipend             : 5 points
-- Duration            : 5 points
-
-Maximum score: 100
-"""
+# ============================================================
+# internship_rank.py
+# AI Internship Recommendation + Personalized Ranking
+# ============================================================
 
 import re
 
 
-def normalize(value):
-    """Convert a value into clean lowercase text."""
+# ============================================================
+# TEXT HELPERS
+# ============================================================
 
-    if value is None:
-        return ""
+def normalize(value):
+    """
+    Convert text/list values into lowercase searchable text.
+    """
 
     if isinstance(value, list):
-        value = " ".join(str(item) for item in value)
+        return " ".join(
+            str(item) for item in value
+        ).lower()
 
-    return str(value).strip().lower()
+    return str(value or "").lower()
 
 
 def words(text):
-    """Extract useful words from text."""
+    """
+    Extract searchable words/tokens.
+    """
 
     return set(
         re.findall(
@@ -42,327 +36,475 @@ def words(text):
     )
 
 
-def skill_score(internship, keyword):
+# ============================================================
+# EXISTING PROFILE MATCHING
+# ============================================================
+
+def calculate_match_score(
+    internship,
+    user_skills="",
+    user_domain="",
+    user_role="",
+    user_query=""
+):
     """
-    Score how strongly the requested skill matches
-    the internship.
+    Calculate the original internship match score.
+
+    Score:
+        Skills       = 50
+        Domain       = 20
+        Role/Title   = 15
+        Description  = 10
+        Job Type     = 5
+
+    Maximum = 100
     """
 
-    requested = normalize(keyword)
+    score = 0
 
-    if not requested:
-        return 0
+    # --------------------------------------------------------
+    # Internship information
+    # --------------------------------------------------------
+
+    internship_skills = normalize(
+        internship.get("skills", "")
+    )
 
     title = normalize(
         internship.get("title", "")
-    )
-
-    skills = normalize(
-        internship.get("skills", "")
     )
 
     description = normalize(
         internship.get("description", "")
     )
 
-    requested_words = words(requested)
-
-    if not requested_words:
-        return 0
-
-    score = 0
-
-    # Exact skill field match
-    if requested in skills:
-        score += 40
-        return score
-
-    # Exact title match
-    if requested in title:
-        score += 35
-
-    # Individual requested words
-    matched_skill_words = sum(
-        1
-        for word in requested_words
-        if word in skills
+    domain = normalize(
+        internship.get("domain", "")
     )
 
-    if matched_skill_words:
-        score += min(
-            30,
-            matched_skill_words * 15
+    job_type = normalize(
+        internship.get("job_type", "")
+    )
+
+    # ========================================================
+    # 1. SKILLS — 50 POINTS
+    # ========================================================
+
+    requested_skills = words(user_skills)
+
+    if requested_skills:
+
+        matched_skills = 0
+
+        for skill in requested_skills:
+
+            if skill in internship_skills:
+                matched_skills += 1
+
+            elif skill in title:
+                matched_skills += 1
+
+            elif skill in description:
+                matched_skills += 1
+
+        skill_score = (
+            matched_skills /
+            len(requested_skills)
+        ) * 50
+
+        score += skill_score
+
+    # ========================================================
+    # 2. DOMAIN — 20 POINTS
+    # ========================================================
+
+    if user_domain:
+
+        domain_text = normalize(
+            user_domain
         )
 
-    # Description match
-    if requested in description:
-        score += 10
+        if domain_text in domain:
+            score += 20
 
-    return min(score, 40)
+        elif domain_text in title:
+            score += 15
 
+        elif domain_text in description:
+            score += 10
 
-def location_score(internship, requested_location):
-    """
-    Score location relevance.
+    # ========================================================
+    # 3. ROLE / TITLE — 15 POINTS
+    # ========================================================
 
-    Priority:
-    Exact location     = 30
-    Same city mention  = 30
-    Same state/region  = 20
-    Remote             = 15
-    India for India    = 15
-    Otherwise          = 0
-    """
+    if user_role:
 
-    requested = normalize(
-        requested_location
-    )
-
-    actual = normalize(
-        internship.get("location", "")
-    )
-
-    if not requested or not actual:
-        return 0
-
-    # Exact requested location
-    if requested == actual:
-        return 30
-
-    # Requested city appears in internship location
-    if requested in actual:
-        return 30
-
-    # Common Karnataka matching
-    karnataka_places = {
-        "mangalore",
-        "mangaluru",
-        "bangalore",
-        "bengaluru",
-        "mysore",
-        "mysuru",
-        "hubli",
-        "belgaum"
-    }
-
-    if (
-        requested in karnataka_places
-        and actual
-    ):
-        if any(
-            place in actual
-            for place in karnataka_places
-        ):
-            return 20
-
-    # Remote internships are useful for India searches
-    if "remote" in actual:
-        if requested in {
-            "india",
-            "mangalore",
-            "mangaluru",
-            "bangalore",
-            "bengaluru"
-        }:
-            return 15
-
-    # India-level match
-    if requested == "india" and "india" in actual:
-        return 15
-
-    return 0
-
-
-def title_score(internship, keyword):
-    """Score whether the requested skill appears in the title."""
-
-    requested = normalize(keyword)
-    title = normalize(
-        internship.get("title", "")
-    )
-
-    if not requested or not title:
-        return 0
-
-    if requested in title:
-        return 10
-
-    requested_words = words(requested)
-
-    matched = sum(
-        1
-        for word in requested_words
-        if word in title
-    )
-
-    if matched:
-        return min(
-            7,
-            matched * 4
+        role_words = words(
+            user_role
         )
 
-    return 0
+        title_words = words(
+            title
+        )
 
+        if role_words:
 
-def eligibility_score(internship):
-    """Give points when meaningful eligibility information exists."""
+            matched_role_words = len(
+                role_words.intersection(
+                    title_words
+                )
+            )
 
-    eligibility = normalize(
-        internship.get("eligibility", "")
-    )
+            score += (
+                matched_role_words /
+                len(role_words)
+            ) * 15
 
-    if not eligibility:
-        return 0
+    # ========================================================
+    # 4. DESCRIPTION / QUERY — 10 POINTS
+    # ========================================================
 
-    invalid_values = {
-        "not available",
-        "not specified",
-        "unknown",
-        "none",
-        "n/a"
-    }
+    if user_query:
 
-    if eligibility in invalid_values:
-        return 0
+        query_words = words(
+            user_query
+        )
 
-    return 10
+        description_words = words(
+            description
+        )
 
+        if query_words:
 
-def stipend_score(internship):
-    """Give points when stipend information is available."""
+            matched_query_words = len(
+                query_words.intersection(
+                    description_words
+                )
+            )
 
-    stipend = normalize(
-        internship.get("stipend", "")
-    )
+            score += (
+                matched_query_words /
+                len(query_words)
+            ) * 10
 
-    if not stipend:
-        return 0
+    # ========================================================
+    # 5. JOB TYPE — 5 POINTS
+    # ========================================================
 
-    invalid_values = {
-        "not available",
-        "not specified",
-        "unknown",
-        "none",
-        "n/a"
-    }
+    if "intern" in job_type:
 
-    if stipend in invalid_values:
-        return 0
+        score += 5
 
-    # Paid internships get full points
-    if (
-        "₹" in stipend
-        or "rs" in stipend
-        or "inr" in stipend
-        or "stipend" in stipend
-        or "paid" in stipend
-    ):
-        return 5
-
-    return 3
-
-
-def duration_score(internship):
-    """Give points when duration is available."""
-
-    duration = normalize(
-        internship.get("duration", "")
-    )
-
-    if not duration:
-        return 0
-
-    invalid_values = {
-        "not available",
-        "not specified",
-        "unknown",
-        "none",
-        "n/a"
-    }
-
-    if duration in invalid_values:
-        return 0
-
-    return 5
-
-
-def calculate_match_score(
-    internship,
-    keyword,
-    location="India"
-):
-    """Calculate the final score from 0 to 100."""
-
-    score = 0
-
-    score += skill_score(
-        internship,
-        keyword
-    )
-
-    score += location_score(
-        internship,
-        location
-    )
-
-    score += title_score(
-        internship,
-        keyword
-    )
-
-    score += eligibility_score(
-        internship
-    )
-
-    score += stipend_score(
-        internship
-    )
-
-    score += duration_score(
-        internship
-    )
+    # ========================================================
+    # FINAL SCORE
+    # ========================================================
 
     return min(
         100,
-        score
+        round(score, 2)
     )
 
 
-def rank_internships(
-    internships,
-    keyword,
-    location="India"
+# ============================================================
+# LEARNED USER INTEREST SCORE
+# ============================================================
+
+def calculate_interest_score(
+    internship,
+    user_interests
 ):
     """
-    Rank internships from best match to weakest match.
+    Calculate how strongly an internship matches
+    the user's previously learned interests.
+
+    Example:
+
+        User frequently views:
+            Python
+            AI
+            Machine Learning
+
+        Internship containing those interests
+        receives a higher behavioral score.
     """
 
-    if not isinstance(internships, list):
-        return []
+    if not user_interests:
+        return 0
+
+    # --------------------------------------------------------
+    # Combine internship information into searchable text
+    # --------------------------------------------------------
+
+    text = " ".join([
+        str(
+            internship.get(
+                "title",
+                ""
+            )
+        ),
+
+        str(
+            internship.get(
+                "company",
+                ""
+            )
+        ),
+
+        str(
+            internship.get(
+                "description",
+                ""
+            )
+        ),
+
+        str(
+            internship.get(
+                "skills",
+                ""
+            )
+        ),
+
+        str(
+            internship.get(
+                "domain",
+                ""
+            )
+        ),
+
+        str(
+            internship.get(
+                "job_type",
+                ""
+            )
+        )
+    ]).lower()
+
+    # --------------------------------------------------------
+    # Calculate weighted interest match
+    # --------------------------------------------------------
+
+    matched_interest_score = 0
+
+    total_interest_score = 0
+
+    for item in user_interests:
+
+        # Database returns dictionaries:
+        #
+        # {
+        #     "interest": "python",
+        #     "score": 12
+        # }
+
+        if isinstance(
+            item,
+            dict
+        ):
+
+            interest = str(
+                item.get(
+                    "interest",
+                    ""
+                )
+            ).lower()
+
+            try:
+                interest_weight = int(
+                    item.get(
+                        "score",
+                        0
+                    )
+                )
+            except (
+                ValueError,
+                TypeError
+            ):
+                interest_weight = 0
+
+        else:
+
+            # Also support simple strings
+            interest = str(
+                item
+            ).lower()
+
+            interest_weight = 1
+
+        # Ignore empty interests
+
+        if not interest:
+            continue
+
+        if interest_weight <= 0:
+            continue
+
+        total_interest_score += (
+            interest_weight
+        )
+
+        # ----------------------------------------------------
+        # Check whether interest appears in internship
+        # ----------------------------------------------------
+
+        if interest in text:
+
+            matched_interest_score += (
+                interest_weight
+            )
+
+    # --------------------------------------------------------
+    # Prevent division by zero
+    # --------------------------------------------------------
+
+    if total_interest_score == 0:
+        return 0
+
+    # --------------------------------------------------------
+    # Convert to 0–100
+    # --------------------------------------------------------
+
+    interest_score = (
+        matched_interest_score /
+        total_interest_score
+    ) * 100
+
+    return min(
+        100,
+        round(interest_score, 2)
+    )
+
+
+# ============================================================
+# FINAL PERSONALIZED RANKING
+# ============================================================
+
+def rank_internships(
+    internships,
+    user_skills="",
+    user_domain="",
+    user_role="",
+    user_query="",
+    user_interests=None
+):
+    """
+    Rank internships using two systems:
+
+    1. Existing profile matching
+    2. Learned behavioral interests
+
+    Existing profile matching:
+        75%
+
+    Learned interests:
+        25%
+
+    If the user has no learned interests,
+    the original score is used.
+    """
 
     ranked = []
 
+    # --------------------------------------------------------
+    # Make sure interests is a list
+    # --------------------------------------------------------
+
+    if user_interests is None:
+        user_interests = []
+
+    # ========================================================
+    # PROCESS EVERY INTERNSHIP
+    # ========================================================
+
     for internship in internships:
 
-        if not isinstance(
+        # ----------------------------------------------------
+        # EXISTING MATCH SCORE
+        # ----------------------------------------------------
+
+        base_score = calculate_match_score(
             internship,
-            dict
-        ):
-            continue
+
+            user_skills=user_skills,
+
+            user_domain=user_domain,
+
+            user_role=user_role,
+
+            user_query=user_query
+        )
+
+        # ----------------------------------------------------
+        # LEARNED INTEREST SCORE
+        # ----------------------------------------------------
+
+        interest_score = calculate_interest_score(
+            internship,
+
+            user_interests
+        )
+
+        # ====================================================
+        # COMBINE BOTH SCORES
+        # ====================================================
+
+        if user_interests:
+
+            final_score = (
+                base_score * 0.75
+            ) + (
+                interest_score * 0.25
+            )
+
+        else:
+
+            final_score = base_score
+
+        # ----------------------------------------------------
+        # Copy internship so original data is not modified
+        # ----------------------------------------------------
 
         item = internship.copy()
 
-        item["match_score"] = calculate_match_score(
-            internship,
-            keyword,
-            location
+        # ----------------------------------------------------
+        # Store individual scores
+        # ----------------------------------------------------
+
+        item[
+            "base_match_score"
+        ] = round(
+            base_score
         )
 
-        ranked.append(item)
+        item[
+            "interest_score"
+        ] = round(
+            interest_score
+        )
 
-    # Highest score first
+        # ----------------------------------------------------
+        # Final personalized score
+        # ----------------------------------------------------
+
+        item[
+            "match_score"
+        ] = round(
+            final_score
+        )
+
+        # ----------------------------------------------------
+        # Add to ranking list
+        # ----------------------------------------------------
+
+        ranked.append(
+            item
+        )
+
+    # ========================================================
+    # SORT HIGHEST MATCH FIRST
+    # ========================================================
+
     ranked.sort(
-        key=lambda item: item.get(
+        key=lambda x: x.get(
             "match_score",
             0
         ),
@@ -372,144 +514,131 @@ def rank_internships(
     return ranked
 
 
-# ==========================================================
+# ============================================================
+# GET TOP INTERNSHIPS
+# ============================================================
+
+def get_top_internships(
+    internships,
+    limit=10
+):
+    """
+    Return only the top N internships.
+    """
+
+    return internships[:limit]
+
+
+# ============================================================
 # TEST
-# ==========================================================
+# ============================================================
 
 if __name__ == "__main__":
-
-    print("=" * 70)
-    print("REALISTIC INTERNSHIP RANKER TEST")
-    print("=" * 70)
-
-    keyword = input(
-        "Enter skill: "
-    ).strip()
-
-    location = input(
-        "Enter location: "
-    ).strip()
-
-    if not keyword:
-        keyword = "Python"
-
-    if not location:
-        location = "Mangalore"
 
     sample_internships = [
 
         {
             "title": "Python Developer Intern",
-            "company": "Coastal Tech",
-            "location": "Mangalore, Karnataka",
-            "skills": "Python, Flask, SQL",
-            "eligibility": "CSE/ISE students and freshers",
-            "duration": "3 Months",
-            "stipend": "₹15,000/month",
-            "description": "Develop Python backend applications.",
-            "apply_url": "https://example.com/1"
+
+            "company": "Example Company",
+
+            "location": "Bangalore",
+
+            "skills": [
+                "Python",
+                "Flask",
+                "SQL"
+            ],
+
+            "description":
+                "Work on Python backend applications.",
+
+            "domain":
+                "Software Development",
+
+            "job_type":
+                "Internship"
         },
 
         {
-            "title": "Python Data Science Intern",
-            "company": "Data Labs",
-            "location": "Bangalore, Karnataka",
-            "skills": "Python, Pandas, SQL",
-            "eligibility": "Students with Python knowledge",
-            "duration": "4 Months",
-            "stipend": "₹12,000/month",
-            "description": "Analyze datasets using Python.",
-            "apply_url": "https://example.com/2"
+            "title": "Java Developer Intern",
+
+            "company": "Another Company",
+
+            "location": "Mumbai",
+
+            "skills": [
+                "Java",
+                "Spring"
+            ],
+
+            "description":
+                "Develop Java applications.",
+
+            "domain":
+                "Software Development",
+
+            "job_type":
+                "Internship"
+        }
+    ]
+
+    # Simulated learned interests
+
+    learned_interests = [
+
+        {
+            "interest": "python",
+            "score": 15
         },
 
         {
-            "title": "Machine Learning Intern",
-            "company": "AI Labs",
-            "location": "Hyderabad, India",
-            "skills": "Python, Machine Learning, TensorFlow",
-            "eligibility": "Students with ML knowledge",
-            "duration": "6 Months",
-            "stipend": "₹20,000/month",
-            "description": "Build machine learning models using Python.",
-            "apply_url": "https://example.com/3"
+            "interest": "flask",
+            "score": 8
         },
 
         {
-            "title": "Python Remote Internship",
-            "company": "Remote Systems",
-            "location": "Remote",
-            "skills": "Python, APIs, Git",
-            "eligibility": "Engineering students",
-            "duration": "3 Months",
-            "stipend": "Paid",
-            "description": "Work remotely on Python projects.",
-            "apply_url": "https://example.com/4"
-        },
-
-        {
-            "title": "Frontend Development Intern",
-            "company": "WebWorks",
-            "location": "Pune, India",
-            "skills": "HTML, CSS, JavaScript",
-            "eligibility": "Web development students",
-            "duration": "3 Months",
-            "stipend": "₹10,000/month",
-            "description": "Build modern web applications.",
-            "apply_url": "https://example.com/5"
+            "interest": "sql",
+            "score": 5
         }
     ]
 
     results = rank_internships(
+
         sample_internships,
-        keyword,
-        location
+
+        user_skills="Python SQL",
+
+        user_domain="Software Development",
+
+        user_role="Python Developer",
+
+        user_query="Python internship",
+
+        user_interests=learned_interests
     )
 
-    print()
-    print(
-        f"Best matches for '{keyword}' "
-        f"in '{location}':"
-    )
-    print()
+    print("\n====================================")
+    print("PERSONALIZED INTERNSHIP RANKING")
+    print("====================================\n")
 
-    for index, internship in enumerate(
-        results,
-        start=1
-    ):
-
-        print("-" * 70)
+    for internship in results:
 
         print(
-            f"{index}. {internship['title']}"
+            internship["title"],
+            "->",
+            internship["match_score"],
+            "%"
         )
 
         print(
-            f"Company      : "
-            f"{internship['company']}"
+            "Base:",
+            internship["base_match_score"]
         )
 
         print(
-            f"Location     : "
-            f"{internship['location']}"
+            "Interest:",
+            internship["interest_score"]
         )
 
-        print(
-            f"Skills       : "
-            f"{internship['skills']}"
-        )
-
-        print(
-            f"Match Score  : "
-            f"{internship['match_score']}%"
-        )
-
-        print(
-            f"Apply URL    : "
-            f"{internship['apply_url']}"
-        )
-
-    print("-" * 70)
-    print()
-    print("RANKING TEST COMPLETED")
-    print("=" * 70)
-
+        print()

@@ -1,6 +1,12 @@
+
 import requests
 import re
+from html import unescape
 
+
+# =========================================================
+# ARBEITNOW API
+# =========================================================
 
 API_URL = "https://www.arbeitnow.com/api/job-board-api"
 
@@ -10,90 +16,69 @@ API_URL = "https://www.arbeitnow.com/api/job-board-api"
 # =========================================================
 
 KEYWORD_ALIASES = {
-    "ai": [
-        "ai",
-        "artificial intelligence",
-        "machine learning",
-        "ml",
-        "aiml",
-        "ai/ml",
-        "deep learning"
+
+    "python": [
+        "python",
+        "python developer",
+        "python intern",
+        "python internship"
     ],
 
-    "artificial intelligence": [
-        "artificial intelligence",
-        "ai",
-        "machine learning",
-        "ml",
-        "aiml",
-        "ai/ml",
-        "deep learning"
+    "java": [
+        "java",
+        "java developer",
+        "java intern",
+        "java internship"
     ],
 
     "machine learning": [
         "machine learning",
+        "machine learning intern",
         "ml",
+        "ml engineer"
+    ],
+
+    "ai": [
         "artificial intelligence",
         "ai",
-        "aiml",
-        "ai/ml",
-        "deep learning"
+        "ai intern",
+        "ai engineer"
     ],
 
-    "ml": [
-        "machine learning",
-        "ml",
-        "artificial intelligence",
-        "ai",
-        "aiml",
-        "deep learning"
+    "data science": [
+        "data science",
+        "data scientist",
+        "data science intern"
     ],
 
-    "aiml": [
-        "aiml",
-        "ai/ml",
-        "artificial intelligence",
-        "machine learning",
-        "ml",
-        "deep learning"
+    "data analyst": [
+        "data analyst",
+        "data analytics",
+        "analytics intern"
     ],
 
-    "data structures": [
-        "data structures",
-        "data structure",
-        "dsa",
-        "data structures and algorithms",
-        "algorithms"
+    "web development": [
+        "web developer",
+        "web development",
+        "frontend",
+        "backend",
+        "full stack",
+        "fullstack"
     ],
 
-    "data structure": [
-        "data structure",
-        "data structures",
-        "dsa",
-        "data structures and algorithms",
-        "algorithms"
+    "javascript": [
+        "javascript",
+        "js",
+        "react",
+        "node",
+        "frontend"
     ],
 
     "dsa": [
-        "dsa",
         "data structures",
-        "data structure",
         "algorithms",
-        "data structures and algorithms"
-    ],
-
-    "python": [
-        "python",
-        "python programming",
-        "python developer"
-    ],
-
-    "leadership": [
-        "leadership",
-        "team leadership",
-        "management",
-        "team management",
-        "project management"
+        "dsa",
+        "competitive programming"
     ]
 }
 
@@ -103,49 +88,63 @@ KEYWORD_ALIASES = {
 # =========================================================
 
 LOCATION_ALIASES = {
+
+    "india": [
+        "india",
+        "indian",
+        "remote"
+    ],
+
     "bangalore": [
         "bangalore",
-        "bengaluru"
+        "bengaluru",
+        "remote"
     ],
 
     "bengaluru": [
         "bangalore",
-        "bengaluru"
+        "bengaluru",
+        "remote"
     ],
 
     "mangalore": [
         "mangalore",
-        "mangaluru"
+        "mangaluru",
+        "remote"
     ],
 
     "mangaluru": [
         "mangalore",
-        "mangaluru"
+        "mangaluru",
+        "remote"
     ],
 
     "mumbai": [
-        "mumbai"
+        "mumbai",
+        "bombay",
+        "remote"
     ],
 
     "delhi": [
         "delhi",
-        "new delhi"
+        "new delhi",
+        "remote"
     ],
 
     "hyderabad": [
-        "hyderabad"
+        "hyderabad",
+        "remote"
     ],
 
     "chennai": [
-        "chennai"
+        "chennai",
+        "madras",
+        "remote"
     ],
 
     "pune": [
-        "pune"
-    ],
-
-    "india": [
-        "india"
+        "pune",
+        "remote"
     ],
 
     "remote": [
@@ -160,12 +159,28 @@ LOCATION_ALIASES = {
 # CLEAN HTML
 # =========================================================
 
-def clean_html(text):
+def clean_text(value):
 
-    if text is None:
+    if value is None:
         return ""
 
-    text = str(text)
+    if isinstance(value, list):
+
+        return ", ".join(
+            clean_text(item)
+            for item in value
+        )
+
+    if isinstance(value, dict):
+
+        return " ".join(
+            clean_text(v)
+            for v in value.values()
+        )
+
+    text = str(value)
+
+    text = unescape(text)
 
     text = re.sub(
         r"<[^>]+>",
@@ -183,19 +198,57 @@ def clean_html(text):
 
 
 # =========================================================
+# GET FIRST AVAILABLE FIELD
+# =========================================================
+
+def get_first_value(data, keys):
+
+    for key in keys:
+
+        value = data.get(key)
+
+        if value is not None:
+
+            cleaned = clean_text(value)
+
+            if cleaned:
+                return cleaned
+
+    return ""
+
+
+# =========================================================
 # KEYWORD VARIATIONS
 # =========================================================
 
 def get_keyword_variations(keyword):
 
-    keyword = str(
-        keyword or ""
-    ).lower().strip()
+    keyword = clean_text(keyword).lower()
 
-    return KEYWORD_ALIASES.get(
-        keyword,
-        [keyword]
-    )
+    if not keyword:
+        return []
+
+    variations = set()
+
+    variations.add(keyword)
+
+    if keyword in KEYWORD_ALIASES:
+
+        variations.update(
+            KEYWORD_ALIASES[keyword]
+        )
+
+    else:
+
+        for main_keyword, aliases in KEYWORD_ALIASES.items():
+
+            if keyword in aliases:
+
+                variations.add(main_keyword)
+
+                variations.update(aliases)
+
+    return list(variations)
 
 
 # =========================================================
@@ -204,18 +257,23 @@ def get_keyword_variations(keyword):
 
 def get_location_variations(location):
 
-    location = str(
-        location or ""
-    ).lower().strip()
+    location = clean_text(location).lower()
 
-    return LOCATION_ALIASES.get(
+    if not location:
+        return ["remote"]
+
+    if location in LOCATION_ALIASES:
+
+        return LOCATION_ALIASES[location]
+
+    return [
         location,
-        [location]
-    )
+        "remote"
+    ]
 
 
 # =========================================================
-# SEARCH INTERNSHIPS
+# SEARCH LIVE INTERNSHIPS
 # =========================================================
 
 def search_internships(
@@ -223,526 +281,550 @@ def search_internships(
     location="India"
 ):
 
+    print()
+    print("=" * 70)
+    print("LIVE INTERNSHIP SEARCH")
+    print("=" * 70)
+
+    print(
+        "Keyword:",
+        keyword
+    )
+
+    print(
+        "Location:",
+        location
+    )
+
+    # -----------------------------------------------------
+    # KEYWORD + LOCATION
+    # -----------------------------------------------------
+
+    keyword_variations = get_keyword_variations(
+        keyword
+    )
+
+    location_variations = get_location_variations(
+        location
+    )
+
+    print(
+        "Keyword variations:",
+        keyword_variations
+    )
+
+    print(
+        "Location variations:",
+        location_variations
+    )
+
+    # -----------------------------------------------------
+    # API REQUEST
+    # -----------------------------------------------------
+
     try:
-
-        keyword = str(
-            keyword or ""
-        ).lower().strip()
-
-        location = str(
-            location or "India"
-        ).lower().strip()
-
-        if not keyword:
-            print("Please enter a keyword.")
-            return []
-
-        print()
-        print("=" * 70)
-        print("SEARCHING INTERNSHIPS")
-        print("=" * 70)
-        print("Keyword :", keyword)
-        print("Location:", location)
-        print("=" * 70)
-
-        # -------------------------------------------------
-        # GET DATA FROM API
-        # -------------------------------------------------
 
         response = requests.get(
             API_URL,
-            timeout=30
+            headers={
+                "User-Agent":
+                    "Mozilla/5.0 "
+                    "(Windows NT 10.0; Win64; x64)"
+            },
+            timeout=20
         )
 
         response.raise_for_status()
 
         data = response.json()
 
-        jobs = data.get(
-            "data",
-            []
-        )
-
-        if not isinstance(jobs, list):
-            jobs = []
-
-        print(
-            "Jobs received from API:",
-            len(jobs)
-        )
-
-        # -------------------------------------------------
-        # KEYWORD VARIATIONS
-        # -------------------------------------------------
-
-        keyword_variations = (
-            get_keyword_variations(
-                keyword
-            )
-        )
-
-        # -------------------------------------------------
-        # LOCATION VARIATIONS
-        # -------------------------------------------------
-
-        location_variations = (
-            get_location_variations(
-                location
-            )
-        )
-
-        results = []
-
-        # -------------------------------------------------
-        # PROCESS JOBS
-        # -------------------------------------------------
-
-        for job in jobs:
-
-            if not isinstance(
-                job,
-                dict
-            ):
-                continue
-
-            title = clean_html(
-                job.get(
-                    "title",
-                    ""
-                )
-            )
-
-            company = clean_html(
-                job.get(
-                    "company_name",
-                    job.get(
-                        "company",
-                        "Not specified"
-                    )
-                )
-            )
-
-            job_location = clean_html(
-                job.get(
-                    "location",
-                    ""
-                )
-            )
-
-            description = clean_html(
-                job.get(
-                    "description",
-                    ""
-                )
-            )
-
-            tags = job.get(
-                "tags",
-                []
-            )
-
-            if isinstance(
-                tags,
-                list
-            ):
-
-                tags_text = ", ".join(
-                    str(tag)
-                    for tag in tags
-                    if tag
-                )
-
-            else:
-
-                tags_text = str(
-                    tags or ""
-                )
-
-            tags_text = clean_html(
-                tags_text
-            )
-
-            # -------------------------------------------------
-            # SEARCHABLE TEXT
-            # -------------------------------------------------
-
-            searchable = (
-                title + " " +
-                company + " " +
-                job_location + " " +
-                tags_text + " " +
-                description
-            ).lower()
-
-            # -------------------------------------------------
-            # KEYWORD MATCH
-            # -------------------------------------------------
-
-            keyword_match = False
-
-            for variation in keyword_variations:
-
-                variation = (
-                    str(variation)
-                    .lower()
-                    .strip()
-                )
-
-                if variation and variation in searchable:
-
-                    keyword_match = True
-                    break
-
-            if not keyword_match:
-                continue
-
-            # -------------------------------------------------
-            # INTERNSHIP CHECK
-            # -------------------------------------------------
-
-            job_type = str(
-                job.get(
-                    "job_type",
-                    ""
-                )
-            ).lower()
-
-            employment_type = str(
-                job.get(
-                    "employment_type",
-                    ""
-                )
-            ).lower()
-
-            internship_text = (
-                searchable + " " +
-                job_type + " " +
-                employment_type
-            )
-
-            internship_words = [
-                "intern",
-                "internship",
-                "trainee"
-            ]
-
-            is_internship = any(
-                word in internship_text
-                for word in internship_words
-            )
-
-            # If the API does not explicitly say
-            # internship, still keep the relevant result.
-            # This prevents valid opportunities from
-            # disappearing.
-
-            # -------------------------------------------------
-            # LOCATION CHECK
-            # -------------------------------------------------
-
-            location_match = False
-
-            location_text = (
-                job_location + " " +
-                description + " " +
-                title
-            ).lower()
-
-            if location in [
-                "india",
-                "all",
-                "any",
-                "worldwide"
-            ]:
-
-                location_match = True
-
-            else:
-
-                for location_name in location_variations:
-
-                    if (
-                        location_name.lower()
-                        in location_text
-                    ):
-
-                        location_match = True
-                        break
-
-                # Remote opportunities are also acceptable
-                if "remote" in location_text:
-
-                    location_match = True
-
-            # If location is missing from the API,
-            # keep the relevant internship instead
-            # of returning zero results.
-
-            if not location_match:
-
-                if not job_location:
-
-                    location_match = True
-
-            # -------------------------------------------------
-            # SCORE
-            # -------------------------------------------------
-
-            match_score = 0
-
-            title_lower = title.lower()
-            tags_lower = tags_text.lower()
-            description_lower = description.lower()
-
-            for variation in keyword_variations:
-
-                variation = (
-                    str(variation)
-                    .lower()
-                    .strip()
-                )
-
-                if variation in title_lower:
-                    match_score += 50
-
-                if variation in tags_lower:
-                    match_score += 30
-
-                if variation in description_lower:
-                    match_score += 10
-
-            if location_match:
-                match_score += 20
-
-            if is_internship:
-                match_score += 20
-
-            # -------------------------------------------------
-            # APPLY URL
-            # -------------------------------------------------
-
-            apply_url = (
-                job.get("url")
-                or job.get("apply_url")
-                or job.get("application_url")
-                or ""
-            )
-
-            apply_url = str(
-                apply_url
-            ).strip()
-
-            # -------------------------------------------------
-            # CREATE RESULT
-            # -------------------------------------------------
-
-            results.append({
-
-                "title":
-                    title
-                    or "Internship Opportunity",
-
-                "company":
-                    company
-                    or "Not specified",
-
-                "location":
-                    job_location
-                    or "Remote / Not specified",
-
-                "skills":
-                    tags_text
-                    or "Not specified",
-
-                "eligibility":
-                    "Check job description",
-
-                "duration":
-                    "Not specified",
-
-                "stipend":
-                    "Not specified",
-
-                "description":
-                    description
-                    or "No description available.",
-
-                "apply_url":
-                    apply_url,
-
-                "type":
-                    "Internship",
-
-                "match_score":
-                    match_score
-            })
-
-        # -------------------------------------------------
-        # REMOVE DUPLICATES
-        # -------------------------------------------------
-
-        unique_results = []
-
-        seen = set()
-
-        for item in results:
-
-            key = (
-                item["title"].lower().strip(),
-                item["company"].lower().strip(),
-                item["apply_url"].lower().strip()
-            )
-
-            if key not in seen:
-
-                seen.add(key)
-
-                unique_results.append(
-                    item
-                )
-
-        # -------------------------------------------------
-        # SORT BY SCORE
-        # -------------------------------------------------
-
-        unique_results.sort(
-            key=lambda item:
-            item.get(
-                "match_score",
-                0
-            ),
-            reverse=True
-        )
-
-        print(
-            "Matching internships:",
-            len(unique_results)
-        )
-
-        print("=" * 70)
-
-        return unique_results
-
-    # -----------------------------------------------------
-    # API ERROR
-    # -----------------------------------------------------
-
     except requests.exceptions.RequestException as error:
 
-        print()
-        print("API CONNECTION ERROR:")
-        print(error)
-        print()
+        print(
+            "API connection error:",
+            error
+        )
 
         return []
-
-    # -----------------------------------------------------
-    # JSON ERROR
-    # -----------------------------------------------------
 
     except ValueError as error:
 
-        print()
-        print("API RESPONSE ERROR:")
-        print(error)
-        print()
+        print(
+            "Invalid API response:",
+            error
+        )
 
         return []
-
-    # -----------------------------------------------------
-    # OTHER ERROR
-    # -----------------------------------------------------
 
     except Exception as error:
 
-        print()
-        print("SEARCH ERROR:")
-        print(error)
-        print()
+        print(
+            "Unexpected API error:",
+            error
+        )
 
         return []
 
+    # -----------------------------------------------------
+    # GET JOB LIST
+    # -----------------------------------------------------
+
+    jobs = data.get(
+        "data",
+        []
+    )
+
+    if not isinstance(jobs, list):
+
+        print(
+            "Unexpected API data format."
+        )
+
+        return []
+
+    print(
+        "Jobs received from API:",
+        len(jobs)
+    )
+
+    # -----------------------------------------------------
+    # PROCESS JOBS
+    # -----------------------------------------------------
+
+    results = []
+
+    seen_urls = set()
+
+    for job in jobs:
+
+        if not isinstance(job, dict):
+            continue
+
+        # -------------------------------------------------
+        # EXTRACT FIELDS
+        # -------------------------------------------------
+
+        title = get_first_value(
+            job,
+            [
+                "title",
+                "job_title",
+                "position",
+                "role"
+            ]
+        )
+
+        company = get_first_value(
+            job,
+            [
+                "company_name",
+                "company",
+                "companyName",
+                "employer"
+            ]
+        )
+
+        job_location = get_first_value(
+            job,
+            [
+                "location",
+                "locations",
+                "city",
+                "place"
+            ]
+        )
+
+        description = get_first_value(
+            job,
+            [
+                "description",
+                "job_description",
+                "content"
+            ]
+        )
+
+        skills = get_first_value(
+            job,
+            [
+                "tags",
+                "skills",
+                "job_skills"
+            ]
+        )
+
+        job_type = get_first_value(
+            job,
+            [
+                "job_types",
+                "job_type",
+                "type"
+            ]
+        )
+
+        apply_url = get_first_value(
+            job,
+            [
+                "url",
+                "apply_url",
+                "application_url",
+                "link"
+            ]
+        )
+
+        remote = get_first_value(
+            job,
+            [
+                "remote"
+            ]
+        )
+
+        # -------------------------------------------------
+        # FALLBACK VALUES
+        # -------------------------------------------------
+
+        if not title:
+
+            title = "Internship Opportunity"
+
+        if not company:
+
+            company = "Company not specified"
+
+        if not job_location:
+
+            if remote.lower() in [
+                "true",
+                "yes",
+                "1"
+            ]:
+
+                job_location = "Remote"
+
+            else:
+
+                job_location = (
+                    "Location not specified"
+                )
+
+        if not description:
+
+            description = (
+                "No description available."
+            )
+
+        if not skills:
+
+            skills = "Not specified"
+
+        if not job_type:
+
+            job_type = "Internship"
+
+        if not apply_url:
+
+            apply_url = ""
+
+        # -------------------------------------------------
+        # CREATE SEARCH TEXT
+        # -------------------------------------------------
+
+        search_text = " ".join(
+            [
+                title,
+                company,
+                job_location,
+                description,
+                skills
+            ]
+        ).lower()
+
+        # -------------------------------------------------
+        # KEYWORD MATCH
+        # -------------------------------------------------
+
+        keyword_match = False
+
+        for variation in keyword_variations:
+
+            if variation.lower() in search_text:
+
+                keyword_match = True
+                break
+
+        if not keyword_match:
+
+            continue
+
+        # -------------------------------------------------
+        # LOCATION MATCH
+        # -------------------------------------------------
+
+        location_text = (
+            job_location.lower()
+        )
+
+        location_match = False
+
+        for location_variation in location_variations:
+
+            if (
+                location_variation.lower()
+                in location_text
+            ):
+
+                location_match = True
+                break
+
+        # India is not always explicitly written.
+        # If remote is available, accept it.
+
+        if "remote" in location_text:
+
+            location_match = True
+
+        # -------------------------------------------------
+        # MATCH SCORE
+        # -------------------------------------------------
+
+        score = 0
+
+        # Keyword in title
+        title_lower = title.lower()
+
+        for variation in keyword_variations:
+
+            if variation.lower() in title_lower:
+
+                score += 50
+                break
+
+        # Keyword somewhere in job
+        if keyword_match:
+
+            score += 25
+
+        # Location
+        if location_match:
+
+            score += 15
+
+        # Internship
+        internship_text = (
+            title
+            + " "
+            + description
+        ).lower()
+
+        if (
+            "intern" in internship_text
+            or "internship" in internship_text
+        ):
+
+            score += 10
+
+        if score > 100:
+
+            score = 100
+
+        # -------------------------------------------------
+        # DUPLICATE CHECK
+        # -------------------------------------------------
+
+        if apply_url:
+
+            if apply_url in seen_urls:
+
+                continue
+
+            seen_urls.add(
+                apply_url
+            )
+
+        # -------------------------------------------------
+        # RESULT
+        # -------------------------------------------------
+
+        result = {
+
+            "internship_id":
+                job.get(
+                    "slug",
+                    ""
+                ),
+
+            "title":
+                title,
+
+            "company":
+                company,
+
+            "location":
+                job_location,
+
+            "skills":
+                skills,
+
+            "eligibility":
+                "Check job description",
+
+            "duration":
+                "Not specified",
+
+            "stipend":
+                "Not specified",
+
+            "description":
+                description,
+
+            "apply_url":
+                apply_url,
+
+            "type":
+                "Internship",
+
+            "job_type":
+                job_type,
+
+            "domain":
+                "",
+
+            "match_score":
+                score,
+
+            "source":
+                "Arbeitnow Live API"
+        }
+
+        results.append(
+            result
+        )
+
+    # -----------------------------------------------------
+    # SORT RESULTS
+    # -----------------------------------------------------
+
+    results.sort(
+        key=lambda x:
+            x.get(
+                "match_score",
+                0
+            ),
+        reverse=True
+    )
+
+    print(
+        "Matching live internships:",
+        len(results)
+    )
+
+    print("=" * 70)
+
+    return results
+
 
 # =========================================================
-# TEST DIRECTLY
+# DISPLAY LIVE RESULTS
+# =========================================================
+
+def display_results(results):
+
+    print()
+    print("=" * 70)
+    print("LIVE INTERNSHIP RESULTS")
+    print("=" * 70)
+
+    if not results:
+
+        print(
+            "No matching live internships found."
+        )
+
+        return
+
+    for index, item in enumerate(
+        results[:10],
+        start=1
+    ):
+
+        print()
+        print(
+            f"{index}. "
+            f"{item.get('title', 'Unknown')}"
+        )
+
+        print(
+            "Company:",
+            item.get(
+                "company",
+                "Not specified"
+            )
+        )
+
+        print(
+            "Location:",
+            item.get(
+                "location",
+                "Not specified"
+            )
+        )
+
+        print(
+            "Skills:",
+            item.get(
+                "skills",
+                "Not specified"
+            )
+        )
+
+        print(
+            "Match Score:",
+            f"{item.get('match_score', 0)}%"
+        )
+
+        print(
+            "Apply URL:",
+            item.get(
+                "apply_url",
+                "Not available"
+            )
+        )
+
+        print("-" * 70)
+
+
+# =========================================================
+# DIRECT TEST
 # =========================================================
 
 if __name__ == "__main__":
 
+    print()
+    print("=" * 70)
+    print("TESTING LIVE INTERNSHIP SEARCH")
+    print("=" * 70)
+
     keyword = input(
-        "Enter internship skill: "
+        "Enter skill/keyword: "
     ).strip()
 
     location = input(
         "Enter location: "
     ).strip()
 
+    if not keyword:
+
+        keyword = "Python"
+
+    if not location:
+
+        location = "India"
+
     results = search_internships(
         keyword,
         location
     )
 
-    print()
-    print("=" * 70)
-    print("RESULTS")
-    print("=" * 70)
+    display_results(
+        results
+    )
 
-    if not results:
-
-        print(
-            "No matching internships found."
-        )
-
-    else:
-
-        for index, item in enumerate(
-            results,
-            start=1
-        ):
-
-            print()
-            print(
-                f"{index}. {item['title']}"
-            )
-
-            print(
-                "Company:",
-                item["company"]
-            )
-
-            print(
-                "Location:",
-                item["location"]
-            )
-
-            print(
-                "Skills:",
-                item["skills"]
-            )
-
-            print(
-                "Eligibility:",
-                item["eligibility"]
-            )
-
-            print(
-                "Duration:",
-                item["duration"]
-            )
-
-            print(
-                "Stipend:",
-                item["stipend"]
-            )
-
-            print(
-                "Apply URL:",
-                item["apply_url"]
-            )
-
-            print(
-                "Score:",
-                item["match_score"]
-            )
-
-            print("-" * 70)
